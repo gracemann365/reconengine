@@ -1,0 +1,22 @@
+// ===================================================================
+// Pitfalls Log for Reconciliation Engine PoC
+// Documenting diagnostic mistakes and their resolutions to improve future efficiency.
+// ===================================================================
+
+pitfall_entry {
+  id = "DIAGNOSIS-001-MISSING-AVRO-DIR"
+  date = "2025-07-07"
+  description = "Initial diagnosis of 'avro-maven-plugin' failure in 'common' module was too focused on 'pom.xml' content and did not immediately consider missing filesystem dependencies (e.g., 'src/main/resources/avro'). The 'pom.rdl' specifies the plugin as required, but the implicit directory requirement was overlooked."
+  fault_assessment = "Failure to immediately infer filesystem prerequisites from plugin configuration. My analysis was limited to the textual content of the POM file rather than the environmental context it operates within."
+  resolution = "Proactively check for and create expected directory structures when a plugin reports missing source/target directories, even if the POM configuration itself appears correct. This involves understanding the implicit requirements of configured plugins."
+  fix_applied = "Created 'C:/Users/Gracemann365/Desktop/reconengine/common/src/main/resources/avro'."
+}
+
+pitfall_entry {
+  id = "DIAGNOSIS-002-TRANSIENT-DEPENDENCY-RESOLUTION"
+  date = "2025-07-07"
+  description = "When encountering dependency resolution failures (e.g., 'Could not resolve dependencies') that appear transient (e.g., connection timeouts after successful pings), the initial troubleshooting step did not immediately include forcing an update of snapshots/releases."
+  fault_assessment = "Suboptimal initial troubleshooting for transient network/caching issues. While network connectivity was verified, the most robust Maven command for such scenarios was not immediately applied."
+  resolution = "For dependency resolution issues, especially those with network-related symptoms, immediately attempt 'mvn clean install -U' to force a refresh of all dependencies from remote repositories, bypassing local cache issues."
+  fix_applied = "Executed 'mvn clean install -DskipTests -U' to resolve 'escalator' module dependencies."
+}
