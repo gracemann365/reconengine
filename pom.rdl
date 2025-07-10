@@ -1,6 +1,7 @@
 // ===================================================================
-// Maven POM Definition Language (POMDL) v1.0
+// Maven POM Definition Language (POMDL) v2.0
 // Single Source of Truth for Maven POM Architecture in Reconciliation Engine PoC
+// Last Updated: 2025-07-07
 // ===================================================================
 
 // -------------------------------------------------------------------
@@ -16,10 +17,12 @@ maven_project_scope {
   java_version = 21
   source_encoding = "UTF-8"
   packaging_types_allowed = ["pom", "jar"]
+  spring_boot_version = "3.2.3"
+  spring_cloud_version = "2023.0.0"
 }
 
 maven_architectural_contracts {
-  id                      = "RECONCILIATION-ENGINE-MAVEN-V1.0-20250707-OMNI"
+  id                      = "RECONCILIATION-ENGINE-MAVEN-V2.0-20250707-OMNI"
   build_tool_type         = "Maven"
   core_principles {
     parent_sanctity = "All child modules MUST declare the root 'reconengine' POM as their parent."
@@ -27,6 +30,7 @@ maven_architectural_contracts {
     plugin_centralization = "All major and shared plugins MUST be managed in the parent POM's <pluginManagement> section."
     version_consistency = "No explicit versions for managed dependencies/plugins in child POMs."
     enforcer_rules_mandatory = "The Maven Enforcer Plugin MUST be configured in the parent to enforce critical rules."
+    bom_usage = "Use Spring Boot BOM and Spring Cloud BOM for consistent dependency versions."
   }
 }
 
@@ -41,12 +45,185 @@ dependency_management_rules {
     versions_for_managed_dependencies = "Child POMs MUST NOT declare <version> for dependencies already present in parent's <dependencyManagement>."
   }
   banned_dependencies = [
-    // Add specific banned dependencies here, e.g., { groupId = "org.apache.commons", artifactId = "commons-collections" }
+    { groupId = "org.apache.commons", artifactId = "commons-collections", reason = "Security vulnerabilities, use commons-collections4 instead" },
+    { groupId = "commons-logging", artifactId = "commons-logging", reason = "Use SLF4J instead" },
+    { groupId = "log4j", artifactId = "log4j", reason = "Deprecated, use Log4j2 instead" }
+  ]
+  required_dependency_groups = [
+    "spring-boot",
+    "spring-cloud",
+    "avro",
+    "testing",
+    "observability",
+    "security"
   ]
 }
 
 // -------------------------------------------------------------------
-// 3. Plugin Management Rules
+// 3. Dependency Catalog - Current Versions
+// -------------------------------------------------------------------
+
+dependency_catalog {
+  spring {
+    boot_version = "3.2.3"
+    cloud_version = "2023.0.0"
+    kafka_version = "3.1.0"
+    cloud_stream_version = "4.1.0"
+  }
+  
+  apache {
+    avro_version = "1.11.3"
+    commons_lang3_version = "3.13.0"
+    commons_collections4_version = "4.4"
+    commons_io_version = "2.15.1"
+  }
+  
+  database {
+    postgresql_version = "42.7.2"
+    h2_version = "2.2.224"
+    flyway_version = "10.5.0"
+    hikari_version = "5.1.0"
+  }
+  
+  resilience {
+    resilience4j_version = "2.2.0"
+    micrometer_version = "1.12.3"
+  }
+  
+  logging {
+    slf4j_version = "2.0.11"
+    logback_version = "1.4.14"
+    log4j2_version = "2.22.1"
+  }
+  
+  security {
+    spring_security_version = "6.2.1"
+    jwt_version = "0.12.3"
+    owasp_encoder_version = "1.2.3"
+  }
+  
+  cloud {
+    aws_sdk_version = "2.23.17"
+    azure_sdk_version = "1.48.0"
+  }
+  
+  testing {
+    junit_version = "5.10.1"
+    mockito_version = "5.8.0"
+    testcontainers_version = "1.19.3"
+  }
+  
+  tools {
+    lombok_version = "1.18.30"
+    mapstruct_version = "1.5.5.Final"
+    jackson_version = "2.16.1"
+    snakeyaml_version = "2.2"
+  }
+  
+  observability {
+    opentelemetry_version = "1.34.1"
+    micrometer_tracing_version = "1.2.3"
+  }
+}
+
+// -------------------------------------------------------------------
+// 4. Module-Specific Dependency Sets
+// -------------------------------------------------------------------
+
+module_dependencies {
+  common {
+    compile = [
+      "org.springframework.boot:spring-boot-starter",
+      "org.apache.avro:avro",
+      "org.apache.commons:commons-lang3",
+      "com.fasterxml.jackson.core:jackson-databind",
+      "org.yaml:snakeyaml",
+      "org.projectlombok:lombok"
+    ]
+    test = [
+      "org.springframework.boot:spring-boot-starter-test",
+      "org.junit.jupiter:junit-jupiter-api",
+      "org.mockito:mockito-core"
+    ]
+  }
+  
+  matcher {
+    compile = [
+      "org.springframework.boot:spring-boot-starter",
+      "com.grace.recon:common",
+      "org.springframework.kafka:spring-kafka",
+      "io.github.resilience4j:resilience4j-spring-boot3",
+      "org.projectlombok:lombok"
+    ]
+    test = [
+      "org.springframework.boot:spring-boot-starter-test",
+      "org.junit.jupiter:junit-jupiter-api",
+      "org.mockito:mockito-core",
+      "org.springframework.kafka:spring-kafka-test"
+    ]
+  }
+  
+  reporter {
+    compile = [
+      "org.springframework.boot:spring-boot-starter",
+      "com.grace.recon:common",
+      "org.springframework.kafka:spring-kafka",
+      "org.projectlombok:lombok"
+    ]
+    test = [
+      "org.springframework.boot:spring-boot-starter-test",
+      "org.junit.jupiter:junit-jupiter-api",
+      "org.mockito:mockito-core"
+    ]
+  }
+  
+  orchestrator {
+    compile = [
+      "org.springframework.boot:spring-boot-starter",
+      "com.grace.recon:common",
+      "org.springframework.kafka:spring-kafka",
+      "io.github.resilience4j:resilience4j-spring-boot3",
+      "org.projectlombok:lombok"
+    ]
+    test = [
+      "org.springframework.boot:spring-boot-starter-test",
+      "org.junit.jupiter:junit-jupiter-api",
+      "org.mockito:mockito-core"
+    ]
+  }
+  
+  naas {
+    compile = [
+      "org.springframework.boot:spring-boot-starter",
+      "com.grace.recon:common",
+      "org.springframework.kafka:spring-kafka",
+      "org.projectlombok:lombok"
+    ]
+    test = [
+      "org.springframework.boot:spring-boot-starter-test",
+      "org.junit.jupiter:junit-jupiter-api",
+      "org.mockito:mockito-core"
+    ]
+  }
+  
+  monitor {
+    compile = [
+      "org.springframework.boot:spring-boot-starter",
+      "com.grace.recon:common",
+      "io.micrometer:micrometer-registry-prometheus",
+      "io.opentelemetry:opentelemetry-api",
+      "org.projectlombok:lombok"
+    ]
+    test = [
+      "org.springframework.boot:spring-boot-starter-test",
+      "org.junit.jupiter:junit-jupiter-api",
+      "org.mockito:mockito-core"
+    ]
+  }
+}
+
+// -------------------------------------------------------------------
+// 5. Plugin Management Rules
 // -------------------------------------------------------------------
 
 plugin_management_rules {
@@ -56,18 +233,42 @@ plugin_management_rules {
     { groupId = "org.jacoco", artifactId = "jacoco-maven-plugin" },
     { groupId = "com.diffplug.spotless", artifactId = "spotless-maven-plugin" },
     { groupId = "org.owasp", artifactId = "dependency-check-maven" },
-    { groupId = "org.apache.avro", artifactId = "avro-maven-plugin" }
+    { groupId = "org.apache.avro", artifactId = "avro-maven-plugin" },
+    { groupId = "org.apache.maven.plugins", artifactId = "maven-surefire-plugin" },
+    { groupId = "org.apache.maven.plugins", artifactId = "maven-failsafe-plugin" },
+    { groupId = "org.apache.maven.plugins", artifactId = "maven-enforcer-plugin" },
+    { groupId = "org.apache.maven.plugins", artifactId = "maven-javadoc-plugin" }
   ]
   banned_child_declarations {
     versions_for_managed_plugins = "Child POMs MUST NOT declare <version> for plugins already present in parent's <pluginManagement>."
   }
   banned_plugins = [
-    // Add specific banned plugins here, e.g., { groupId = "org.apache.maven.plugins", artifactId = "maven-antrun-plugin" }
+    { groupId = "org.apache.maven.plugins", artifactId = "maven-antrun-plugin", reason = "Use Maven specific plugins instead" },
+    { groupId = "org.codehaus.mojo", artifactId = "exec-maven-plugin", reason = "Use spring-boot-maven-plugin instead for Spring Boot applications" }
   ]
 }
 
 // -------------------------------------------------------------------
-// 4. Maven Enforcer Plugin Configuration
+// 6. Plugin Catalog - Current Versions
+// -------------------------------------------------------------------
+
+plugin_catalog {
+  spring_boot_maven_plugin_version = "3.2.3"
+  maven_compiler_plugin_version = "3.12.1"
+  maven_surefire_plugin_version = "3.2.5"
+  maven_failsafe_plugin_version = "3.2.5"
+  maven_enforcer_plugin_version = "3.4.1"
+  maven_javadoc_plugin_version = "3.6.3"
+  jacoco_maven_plugin_version = "0.8.11"
+  spotless_maven_plugin_version = "2.40.0"
+  dependency_check_maven_version = "9.0.8"
+  avro_maven_plugin_version = "1.11.3"
+  maven_resources_plugin_version = "3.3.1"
+  maven_source_plugin_version = "3.3.0"
+}
+
+// -------------------------------------------------------------------
+// 7. Maven Enforcer Plugin Configuration
 // -------------------------------------------------------------------
 
 enforcer_plugin_configuration {
@@ -76,7 +277,117 @@ enforcer_plugin_configuration {
   rules_enabled = [
     "requireMavenVersion",
     "requireJavaVersion",
-    "dependencyConvergence"
+    "dependencyConvergence",
+    "banDuplicatePomDependencyVersions",
+    "bannedDependencies",
+    "requireUpperBoundDeps"
   ]
-  // Consider adding 'bannedDependencies' and 'bannedPlugins' rules to Enforcer if needed for strict enforcement.
+  // Maven property requirements
+  required_properties = [
+    "project.build.sourceEncoding",
+    "maven.compiler.source",
+    "maven.compiler.target"
+  ]
+}
+
+// -------------------------------------------------------------------
+// 8. Build Profile Definitions
+// -------------------------------------------------------------------
+
+build_profiles {
+  profile {
+    id = "dev"
+    default = true
+    activation {
+      property {
+        name = "env"
+        value = "dev"
+      }
+    }
+    properties {
+      "spring.profiles.active" = "dev"
+      "skipTests" = "false"
+      "skipITs" = "true"
+    }
+  }
+  
+  profile {
+    id = "prod"
+    activation {
+      property {
+        name = "env"
+        value = "prod"
+      }
+    }
+    properties {
+      "spring.profiles.active" = "prod"
+      "skipTests" = "false"
+      "skipITs" = "false"
+    }
+  }
+  
+  profile {
+    id = "ci"
+    activation {
+      property {
+        name = "env"
+        value = "ci"
+      }
+    }
+    properties {
+      "spring.profiles.active" = "test"
+      "skipTests" = "false"
+      "skipITs" = "false"
+      "jacoco.enabled" = "true"
+    }
+  }
+}
+
+// -------------------------------------------------------------------
+// 9. Repository Management
+// -------------------------------------------------------------------
+
+repository_management {
+  allowed_repositories = [
+    "central",
+    "spring-releases",
+    "spring-milestones",
+    "spring-snapshots",
+    "apache-releases",
+    "confluent"
+  ]
+  
+  repository_mirrors {
+    central = "https://repo1.maven.org/maven2/"
+    spring_releases = "https://repo.spring.io/release"
+    apache_releases = "https://repository.apache.org/content/repositories/releases/"
+  }
+  
+  distribution_management {
+    internal_repository = "https://artifactory.grace.com/releases"
+    internal_snapshot_repository = "https://artifactory.grace.com/snapshots"
+  }
+}
+
+// -------------------------------------------------------------------
+// 10. Spring Boot Configuration
+// -------------------------------------------------------------------
+
+spring_boot_configuration {
+  required_starters = [
+    "spring-boot-starter",
+    "spring-boot-starter-test"
+  ]
+  
+  recommended_starters = [
+    "spring-boot-starter-actuator",
+    "spring-boot-starter-validation",
+    "spring-boot-starter-aop"
+  ]
+  
+  plugin_configuration {
+    executable = true
+    layout = "ZIP"
+    requires_unpack = []
+  }
 }

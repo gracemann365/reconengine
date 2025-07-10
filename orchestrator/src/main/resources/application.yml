@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: orchestrator-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: orchestrator-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        max.poll.records: 500
+        fetch.min.bytes: 524288 # 512KB
+        fetch.max.wait.ms: 100
+        isolation.level: read_committed
+        spring.json.value.default.type: com.grace.recon.common.dto.Quant
+    producer:
+      acks: all
+      retries: 5
+      batch-size: 16384
+      linger-ms: 50
+      delivery-timeout-ms: 60000
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+server:
+  port: 8081

@@ -1,0 +1,95 @@
+- phase_id: "PROJECT_INFRASTRUCTURE"
+  phase_name: "Core Infrastructure Setup (Local PoC)"
+  status: "PENDING"
+  description: "Set up essential external services required for the microservices to operate locally."
+  tasks:
+    - task_id: "INFRA.T1"
+      task_name: "Set up Local MongoDB Instance"
+      module: "infrastructure"
+      status: "PENDING"
+      description: "Install and configure a local MongoDB instance for data persistence requirements of microservices."
+      action_detail: "Install MongoDB Community Edition, start the MongoDB daemon (mongod), and create any necessary databases/collections for the PoC. Verify connectivity."
+      dependencies: []
+
+    - task_id: "INFRA.T2"
+      task_name: "Set up Local Kafka Broker & ZooKeeper"
+      module: "infrastructure"
+      status: "PENDING"
+      description: "Install and configure a local Kafka broker and its dependency ZooKeeper for inter-service communication and event streaming."
+      action_detail: "Install Apache Kafka, start ZooKeeper, start the Kafka broker, and create any necessary topics for the PoC. Verify connectivity and message production/consumption."
+      dependencies: ["INFRA.T1"]
+
+- phase_id: "PROJECT_DEVELOPMENT"
+  phase_name: "Microservice Development & Incremental Integration"
+  status: "PENDING"
+  description: "Iterative development of microservices, integrating each one into a continuously working PoC pipeline."
+  tasks:
+    - task_id: "PROJECT.T1"
+      task_name: "Develop & Integrate NaaS Microservice"
+      module: "naas-service"
+      status: "PENDING"
+      description: "Implement the core data ingestion and normalization logic. Integrate it by building and running it locally to ensure it works with the 'common' module and can process sample data."
+      action_detail: "Focus on implementing Webhook API for EOD file delivery, parsing input (e.g., CSV), transforming to Unified DTOs, and publishing to 'kafka_unified_dtos_input_topic'. Ensure successful local execution/communication with 'common' services."
+      dependencies: ["common_module_completed", "INFRA.T1", "INFRA.T2"]
+
+    - task_id: "PROJECT.T2"
+      task_name: "Develop & Integrate Orchestrator Microservice"
+      module: "orchestrator-service"
+      status: "PENDING"
+      description: "Implement the workflow and process orchestration logic. Integrate by running it locally with 'NaaS' and 'common' to manage reconciliation flows."
+      action_detail: "Focus on defining and executing the reconciliation workflow steps. Ensure successful local execution/communication with 'common' and establish functional data flow from 'NaaS'."
+      dependencies: ["PROJECT.T1"]
+
+    - task_id: "PROJECT.T3"
+      task_name: "Develop & Integrate Matcher Microservice"
+      module: "matcher-service"
+      status: "PENDING"
+      description: "Implement the core reconciliation matching logic. Integrate by running it locally with 'common' and 'Orchestrator' to perform actual data matching."
+      action_detail: "Focus on implementing matching algorithms and rules. Ensure successful local execution/communication with 'common' and receive data for processing from 'Orchestrator'."
+      dependencies: ["PROJECT.T2"]
+
+    - task_id: "PROJECT.T4"
+      task_name: "Develop & Integrate Reporter Microservice"
+      module: "reporter-service"
+      status: "PENDING"
+      description: "Implement the reporting and analytics generation logic. Integrate by running it locally with 'common' and 'Matcher' to produce reports."
+      action_detail: "Focus on generating reconciliation reports (e.g., text, console output). Ensure successful local execution/communication with 'common' and consumption of matching results from 'Matcher'."
+      dependencies: ["PROJECT.T3"]
+
+    - task_id: "PROJECT.T5"
+      task_name: "Develop & Integrate Escalator Microservice"
+      module: "escalator-service"
+      status: "PENDING"
+      description: "Implement the unreconciled item escalation and notification logic. Integrate by running it locally with 'common' and 'Reporter' to handle exceptions."
+      action_detail: "Focus on defining basic escalation rules and console/log notifications. Ensure successful local execution/communication with 'common' and consumption of UREs from 'Reporter'."
+      dependencies: ["PROJECT.T4"]
+
+    - task_id: "PROJECT.T6"
+      task_name: "Develop & Integrate Monitor Microservice"
+      module: "monitor-service"
+      status: "PENDING"
+      description: "Implement system health and performance monitoring logic. Integrate by running it locally to collect basic metrics/logs from other running microservices."
+      action_detail: "Focus on collecting and exposing basic metrics/logs (e.g., via Actuator endpoints or simple console logging). Ensure successful local execution/communication with 'common' and data collection from other active services."
+      dependencies: ["PROJECT.T1", "PROJECT.T2", "PROJECT.T3", "PROJECT.T4", "PROJECT.T5"]
+
+    - task_id: "PROJECT.T7"
+      task_name: "End-to-End PoC Demonstration and Validation (Local)"
+      module: "full-project"
+      status: "PENDING"
+      description: "Perform a complete end-to-end run of the Reconciliation Engine PoC locally, demonstrating the integrated workflow from ingestion to reporting/escalation."
+      action_detail: "Run all microservices concurrently via local Maven commands or individual executable JARs to show the full data flow and reconciliation process in action."
+      dependencies:
+        - "PROJECT.T1"
+        - "PROJECT.T2"
+        - "PROJECT.T3"
+        - "PROJECT.T4"
+        - "PROJECT.T5"
+        - "PROJECT.T6"
+
+    - task_id: "PROJECT.T8"
+      task_name: "PoC Documentation & Review"
+      module: "project-level"
+      status: "PENDING"
+      description: "Prepare high-level documentation for the PoC, including architectural overview, setup instructions, and a summary of capabilities/limitations."
+      action_detail: "Consolidate existing READMEs, create a simple architectural diagram, and summarize the demonstrated functionalities."
+      dependencies: ["PROJECT.T7"]

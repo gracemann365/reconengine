@@ -1,0 +1,25 @@
+quant-validation-rules:
+  rule-1:
+    field: transactionId
+    type: presence
+  rule-2:
+    field: amount
+    type: presence
+  rule-3:
+    field: currency
+    type: value
+    expectedValue: USD
+  rule-4:
+    field: sourceSystem
+    type: presence
+
+ure-validation-rules:
+  rule-a:
+    field: ureId
+    type: presence
+  rule-b:
+    field: transactionQuant
+    type: presence
+  rule-c:
+    field: reasonCode
+    type: presence

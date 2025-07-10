@@ -1,0 +1,6 @@
+kafka:
+  bootstrap:
+    servers: test-kafka:9092
+common:
+  buffer:
+    capacity: 5000

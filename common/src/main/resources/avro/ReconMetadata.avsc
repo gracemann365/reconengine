@@ -1,0 +1,77 @@
+{
+  "type": "record",
+  "name": "ReconMetadata",
+  "namespace": "com.grace.recon.common.dto",
+  "doc": "Stores aggregated metadata and statistics for a reconciliation job or batch.",
+  "fields": [
+    {
+      "name": "jobId",
+      "type": "string",
+      "doc": "Unique identifier for the reconciliation job."
+    },
+    {
+      "name": "batchId",
+      "type": "string",
+      "doc": "Unique identifier for the specific batch within the job."
+    },
+    {
+      "name": "totalQuantsConsumed",
+      "type": "long",
+      "doc": "Total number of Quants consumed for this batch."
+    },
+    {
+      "name": "matchedExactCount",
+      "type": "long",
+      "doc": "Number of transactions that found an exact match."
+    },
+    {
+      "name": "fuzzyMatchedCount",
+      "type": "long",
+      "doc": "Number of transactions that found a fuzzy match."
+    },
+    {
+      "name": "ureCount",
+      "type": "long",
+      "doc": "Number of Unreconciled Exceptions (UREs) generated."
+    },
+    {
+      "name": "processingTimeMs",
+      "type": "long",
+      "doc": "Time taken to process this batch in milliseconds."
+    },
+    {
+      "name": "errorCounts",
+      "type": {
+        "type": "map",
+        "values": "long"
+      },
+      "doc": "Map of error codes to their counts for this batch."
+    },
+    {
+      "name": "resourceUtilizationSnapshot",
+      "type": ["null", {
+        "type": "map",
+        "values": "string"
+      }],
+      "default": null,
+      "doc": "Optional snapshot of resource utilization (e.g., CPU, Memory) during batch processing."
+    },
+    {
+      "name": "kafkaProducerMetrics",
+      "type": ["null", {
+        "type": "map",
+        "values": "string"
+      }],
+      "default": null,
+      "doc": "Optional metrics from Kafka producer (e.g., records_sent, produce_latency) for this batch."
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Timestamp when this metadata record was created."
+    }
+  ]
+}

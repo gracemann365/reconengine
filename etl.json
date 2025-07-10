@@ -1,0 +1,627 @@
+{
+  "etl_rdl_metadata": {
+    "version": "1.0",
+    "purpose": "Definitive specification for NaaS ETL (Extraction, Transformation, Loading) processes, including source data schemas, transformation rules, and detailed test data metadata.",
+    "generated_on": "2025-07-07T13:24:43 IST",
+    "notes": "This RDL aggregates information from the Reconciliation Handoff Document, provided source schemas, and detailed test data analysis."
+  },
+  "sources": [
+    {
+      "name": "Switch Side Authorization Logs",
+      "format": "SQL_DUMP",
+      "original_filename": "switchSideSQLDumpOfAuthorizationlogs.sql",
+      "record_count_from_handoff": 4999,
+      "schema_file": "CreateReconDemoSchema.sql"
+    },
+    {
+      "name": "Visa Clearing Scheme",
+      "format": "CSV",
+      "original_filename": "visaClearingSchemeCSV.csv",
+      "record_count_from_handoff": 5000,
+      "schema_file": "VISA_CSV_SCHEMA.xml"
+    }
+  ],
+  "test_data_metadata_excel_file": {
+    "filename": "ReconciliationTESTdata.xlsv",
+    "description": "Consolidated test data for both Switch and Visa sources, used for NaaS ETL development and validation.",
+    "sheets_metadata": [
+      {
+        "sheet_name_in_excel": "switchSideSQLTableData",
+        "metadata": {
+          "dataset_name": "switchSideSQLTableData",
+          "record_count": 4999,
+          "column_count": 55,
+          "columns": [
+            "id", "transaction_id", "merchant_name", "merchant_id", "merchant_category_code",
+            "transaction_amount", "transaction_currency", "transaction_date_time", "stan",
+            "card_number", "card_type", "transaction_type", "authorization_code", "response_code",
+            "rrn", "processing_code", "terminal_id", "terminal_location", "country_code",
+            "settlement_amount", "settlement_currency", "transaction_status", "created_at",
+            "updated_at", "batch_id", "account_holder_name", "account_type", "acquirer_bin",
+            "acquirer_reference_number", "adjustment_amount", "amount", "authorization_date_time",
+            "authorization_indicator", "batch_number", "card_expiry_date", "cardholder_name",
+            "currency_code", "date_of_settlement", "issuer_bin", "issuer_response_code",
+            "loyalty_points_earned", "loyalty_points_redeemed", "narrative",
+            "original_authorization_code", "original_transaction_amount", "original_transaction_id",
+            "reason_code", "refund_amount", "reversal_indicator", "transaction_code",
+            "transaction_date", "transaction_fee", "transaction_origin", "transaction_reference",
+            "transaction_time"
+          ],
+          "null_counts": {
+            "id": 0, "transaction_id": 0, "merchant_name": 0, "merchant_id": 0, "merchant_category_code": 0,
+            "transaction_amount": 0, "transaction_currency": 4999, "transaction_date_time": 4999,
+            "stan": 0, "card_number": 0, "card_type": 4999, "transaction_type": 0,
+            "authorization_code": 0, "response_code": 0, "rrn": 0, "processing_code": 4999,
+            "terminal_id": 0, "terminal_location": 4999, "country_code": 4999,
+            "settlement_amount": 0, "settlement_currency": 4999, "transaction_status": 4999,
+            "created_at": 0, "updated_at": 0, "batch_id": 4999, "account_holder_name": 0,
+            "account_type": 0, "acquirer_bin": 0, "acquirer_reference_number": 0,
+            "adjustment_amount": 0, "amount": 0, "authorization_date_time": 0,
+            "authorization_indicator": 0, "batch_number": 0, "card_expiry_date": 0,
+            "cardholder_name": 0, "currency_code": 0, "date_of_settlement": 0,
+            "issuer_bin": 0, "issuer_response_code": 0, "loyalty_points_earned": 0,
+            "loyalty_points_redeemed": 0, "narrative": 0, "original_authorization_code": 4999,
+            "original_transaction_amount": 0, "original_transaction_id": 4999,
+            "reason_code": 0, "refund_amount": 0, "reversal_indicator": 0,
+            "transaction_code": 0, "transaction_date": 4999, "transaction_fee": 0,
+            "transaction_origin": 0, "transaction_reference": 0, "transaction_time": 4999
+          },
+          "duplicate_records": 0,
+          "sample_hashes": {
+            "first_5_row_hashes": [
+              -3398843742947371060, -1671489871253022695, 3944129594214714909,
+              6683049650469691816, -6319075518059545414
+            ],
+            "column_level_hashes": {
+              "id": -8187890832027092056, "transaction_id": -4505634033919583825,
+              "merchant_name": 1572575190687620058, "merchant_id": 6546491590095094577,
+              "merchant_category_code": 3168902976163987340, "transaction_amount": 1998333075864406914,
+              "transaction_currency": -6140510572768235700, "transaction_date_time": -6140510572768235700,
+              "stan": 7441969517779681411, "card_number": 3878264067650484818,
+              "card_type": -6140510572768235700, "transaction_type": 4774860272858573645,
+              "authorization_code": 6614879966676760198, "response_code": 4899576608258484273,
+              "rrn": -5557412934648995221, "processing_code": -6140510572768235700,
+              "terminal_id": 1645490515528297216, "terminal_location": -6140510572768235700,
+              "country_code": -6140510572768235700, "settlement_amount": 6271268588123991780,
+              "settlement_currency": -6140510572768235700, "transaction_status": -6140510572768235700,
+              "created_at": 6009208548272240378, "updated_at": 6009208548272240378,
+              "batch_id": -6140510572768235700, "account_holder_name": -8719271948098759400,
+              "account_type": -4451422047670732924, "acquirer_bin": -7110397537387972704,
+              "acquirer_reference_number": -5035652220681297148, "adjustment_amount": 4899576608258484273,
+              "amount": 6271268588123991780, "authorization_date_time": 5001293569987774346,
+              "authorization_indicator": -5679460385606510414, "batch_number": -5692576780639911397,
+              "card_expiry_date": 8469138925803499466, "cardholder_name": -8719271948098759400,
+              "currency_code": -6390679914896393362, "date_of_settlement": 4616630640091059164,
+              "issuer_bin": 8462427390035537155, "issuer_response_code": 4899576608258484273,
+              "loyalty_points_earned": -4623699604186148714, "loyalty_points_redeemed": 1837288917615749048,
+              "narrative": 3111584332523697174, "original_authorization_code": -6140510572768235700,
+              "original_transaction_amount": 4899576608258484273, "original_transaction_id": -6140510572768235700,
+              "reason_code": 4899576608258484273, "refund_amount": 4899576608258484273,
+              "reversal_indicator": 3419476633406977519, "transaction_code": 1726999599686161465,
+              "transaction_date": -6140510572768235700, "transaction_fee": 8356827870848472019,
+              "transaction_origin": -3672062706251089117, "transaction_reference": 8581825139750095770,
+              "transaction_time": -6140510572768235700
+            }
+          },
+          "column_stats": {
+            "id": {
+              "dtype": "int64", "unique_count": 4999,
+              "sample_values": ["62713", "62743", "62758", "62771", "62789"],
+              "min": 62713.0, "max": 113199.0, "mean": 87957.69453890779, "std_dev": 14560.410740033385
+            },
+            "transaction_id": {
+              "dtype": "object", "unique_count": 4999,
+              "sample_values": ["TXN1743325661506000179", "TXN1743325661503000054", "TXN1743325661504000122", "TXN1743325661504000105", "TXN1743325661500000004"]
+            },
+            "merchant_name": {
+              "dtype": "object", "unique_count": 5,
+              "sample_values": ["SuperMart", "GlobalRetail", "MegaShop", "QuickStore", "LocalMarket"]
+            },
+            "merchant_id": {
+              "dtype": "object", "unique_count": 100,
+              "sample_values": ["MERCHANT37", "MERCHANT80", "MERCHANT6", "MERCHANT22", "MERCHANT94"]
+            },
+            "merchant_category_code": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["5411"],
+              "min": 5411.0, "max": 5411.0, "mean": 5411.0, "std_dev": 0.0
+            },
+            "transaction_amount": {
+              "dtype": "float64", "unique_count": 1,
+              "sample_values": ["0.0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "transaction_currency": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "transaction_date_time": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "stan": {
+              "dtype": "int64", "unique_count": 4983,
+              "sample_values": ["361610", "787177", "808514", "257831", "724893"],
+              "min": 68.0, "max": 999872.0, "mean": 499550.54110822163, "std_dev": 288557.80071221053
+            },
+            "card_number": {
+              "dtype": "int64", "unique_count": 16,
+              "sample_values": ["4024007198765432", "4234567812345670", "4234567812345674", "4024007198765435", "4024007198765433"],
+              "min": 4024007198765432.0, "max": 4532756278912349.0, "mean": 4266532516242318.5, "std_dev": 222466872723862.7
+            },
+            "card_type": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "transaction_type": {
+              "dtype": "object", "unique_count": 8,
+              "sample_values": ["CAPTURE", "CHARGEBACK", "REFUND", "REVERSAL", "PURCHASE"]
+            },
+            "authorization_code": {
+              "dtype": "object", "unique_count": 3941,
+              "sample_values": ["AUTH8468", "AUTH6295", "AUTH2450", "AUTH7504", "AUTH6425"]
+            },
+            "response_code": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "rrn": {
+              "dtype": "int64", "unique_count": 4122,
+              "sample_values": ["20250890177", "20250890052", "20250890120", "20250890105", "20250890001"],
+              "min": 20250890001.0, "max": 20250899999.0, "mean": 20250894941.779755, "std_dev": 2904.77814749022
+            },
+            "processing_code": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "terminal_id": {
+              "dtype": "object", "unique_count": 10,
+              "sample_values": ["TERM5", "TERM9", "TERM2", "TERM0", "TERM7"]
+            },
+            "terminal_location": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "country_code": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "settlement_amount": {
+              "dtype": "float64", "unique_count": 4990,
+              "sample_values": ["9843.23", "2248.71", "2391.28", "1665.13", "4256.89"],
+              "min": 100.61, "max": 9998.8, "mean": 5020.216875375075, "std_dev": 2855.0667016916436
+            },
+            "settlement_currency": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "transaction_status": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "created_at": {
+              "dtype": "object", "unique_count": 90,
+              "sample_values": ["2025-03-30 14:37:42", "2025-03-30 14:37:43", "2025-03-30 14:39:58", "2025-03-30 14:39:59", "2025-03-30 14:40:00"]
+            },
+            "updated_at": {
+              "dtype": "object", "unique_count": 90,
+              "sample_values": ["2025-03-30 14:37:42", "2025-03-30 14:37:43", "2025-03-30 14:39:58", "2025-03-30 14:39:59", "2025-03-30 14:40:00"]
+            },
+            "batch_id": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "account_holder_name": {
+              "dtype": "object", "unique_count": 5,
+              "sample_values": ["Amit Patel", "Priya Sharma", "Ravi Kumar", "Rajesh Verma", "Neha Singh"]
+            },
+            "account_type": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["Savings"]
+            },
+            "acquirer_bin": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["123456"],
+              "min": 123456.0, "max": 123456.0, "mean": 123456.0, "std_dev": 0.0
+            },
+            "acquirer_reference_number": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["123ABC"]
+            },
+            "adjustment_amount": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "amount": {
+              "dtype": "float64", "unique_count": 4990,
+              "sample_values": ["9843.23", "2248.71", "2391.28", "1665.13", "4256.89"],
+              "min": 100.61, "max": 9998.8, "mean": 5020.216875375075, "std_dev": 2855.0667016916436
+            },
+            "authorization_date_time": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["2025-03-23 10:00:00"]
+            },
+            "authorization_indicator": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["A"]
+            },
+            "batch_number": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["BATCH001"]
+            },
+            "card_expiry_date": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["12/25"]
+            },
+            "cardholder_name": {
+              "dtype": "object", "unique_count": 5,
+              "sample_values": ["Amit Patel", "Priya Sharma", "Ravi Kumar", "Rajesh Verma", "Neha Singh"]
+            },
+            "currency_code": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["356"],
+              "min": 356.0, "max": 356.0, "mean": 356.0, "std_dev": 0.0
+            },
+            "date_of_settlement": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["2025-03-24"]
+            },
+            "issuer_bin": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["654321"],
+              "min": 654321.0, "max": 654321.0, "mean": 654321.0, "std_dev": 0.0
+            },
+            "issuer_response_code": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "loyalty_points_earned": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["10"],
+              "min": 10.0, "max": 10.0, "mean": 10.0, "std_dev": 0.0
+            },
+            "loyalty_points_redeemed": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["5"],
+              "min": 5.0, "max": 5.0, "mean": 5.0, "std_dev": 0.0
+            },
+            "narrative": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["Transaction successful"]
+            },
+            "original_authorization_code": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "original_transaction_amount": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "original_transaction_id": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "reason_code": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "refund_amount": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "reversal_indicator": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["N"]
+            },
+            "transaction_code": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["SALE"]
+            },
+            "transaction_date": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "transaction_fee": {
+              "dtype": "float64", "unique_count": 1,
+              "sample_values": ["2.5"],
+              "min": 2.5, "max": 2.5, "mean": 2.5, "std_dev": 0.0
+            },
+            "transaction_origin": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["Online"]
+            },
+            "transaction_reference": {
+              "dtype": "object", "unique_count": 3916,
+              "sample_values": ["REF4575", "REF6060", "REF4448", "REF9968", "REF4963"]
+            },
+            "transaction_time": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            }
+          }
+        }
+      },
+      {
+        "sheet_name_in_excel": "visaClearingSchemeCSV",
+        "metadata": {
+          "dataset_name": "visaClearingSchemeCSV",
+          "record_count": 5000,
+          "column_count": 42,
+          "columns": [
+            "transactionType", "transactionId", "cardNumber", "amount", "Stan",
+            "currencyCode", "transactionDate", "transactionTime", "responseCode",
+            "accountType", "authorizationCode", "merchantId", "merchantCategoryCode",
+            "terminalId", "cardExpiryDate", "cardholderName", "accountHolderName",
+            "transactionFee", "authorizationIndicator", "acquirerBin", "issuerBin",
+            "merchantName", "transactionCode", "reasonCode", "rrn",
+            "originalTransactionId", "acquirerReferenceNumber", "batchNumber",
+            "dateOfSettlement", "settlementAmount", "issuerResponseCode",
+            "transactionOrigin", "transactionReference", "originalTransactionAmount",
+            "refundAmount", "adjustmentAmount", "loyaltyPointsEarned",
+            "loyaltyPointsRedeemed", "reversalIndicator", "authorizationDateTime",
+            "originalAuthorizationCode", "narrative"
+          ],
+          "null_counts": {
+            "transactionType": 0, "transactionId": 0, "cardNumber": 0, "amount": 0, "Stan": 0,
+            "currencyCode": 0, "transactionDate": 0, "transactionTime": 0, "responseCode": 0,
+            "accountType": 0, "authorizationCode": 0, "merchantId": 0, "merchantCategoryCode": 0,
+            "terminalId": 0, "cardExpiryDate": 0, "cardholderName": 0, "accountHolderName": 0,
+            "transactionFee": 0, "authorizationIndicator": 0, "acquirerBin": 0, "issuerBin": 0,
+            "merchantName": 0, "transactionCode": 0, "reasonCode": 0, "rrn": 249,
+            "originalTransactionId": 5000, "acquirerReferenceNumber": 0, "batchNumber": 0,
+            "dateOfSettlement": 0, "settlementAmount": 0, "issuerResponseCode": 0,
+            "transactionOrigin": 0, "transactionReference": 0, "originalTransactionAmount": 0,
+            "refundAmount": 0, "adjustmentAmount": 0, "loyaltyPointsEarned": 0,
+            "loyaltyPointsRedeemed": 0, "reversalIndicator": 0, "authorizationDateTime": 0,
+            "originalAuthorizationCode": 5000, "narrative": 0
+          },
+          "duplicate_records": 0,
+          "sample_hashes": {
+            "first_5_row_hashes": [
+              -6691739010315825321, 5995670300725483811, -4923674044546138849,
+              4938726987554705835, -5879460437175704446
+            ],
+            "column_level_hashes": {
+              "transactionType": 2220830696444753185, "transactionId": -4186068724267526174,
+              "cardNumber": 2593610760911447875, "amount": 1998333075864406914,
+              "Stan": -8678372850691327517, "currencyCode": -6390679914896393362,
+              "transactionDate": 7592111620554138126, "transactionTime": 2193339621270433982,
+              "responseCode": 4899576608258484273, "accountType": -4451422047670732924,
+              "authorizationCode": -1119422208739934155, "merchantId": 7544319577560965503,
+              "merchantCategoryCode": 3168902976163987340, "terminalId": 7733439178559255285,
+              "cardExpiryDate": 6285436002653170363, "cardholderName": 8500494080476884505,
+              "accountHolderName": 8500494080476884505, "transactionFee": 8356827870848472019,
+              "authorizationIndicator": -5679460385606510414, "acquirerBin": -7110397537387972704,
+              "issuerBin": 8462427390035537155, "merchantName": -7826657625354752095,
+              "transactionCode": 1726999599686161465, "reasonCode": 4899576608258484273,
+              "rrn": -2597946578843600673, "originalTransactionId": -6140510572768235700,
+              "acquirerReferenceNumber": -5035652220681297148, "batchNumber": -5692576780639911397,
+              "dateOfSettlement": -8298057598071306150, "settlementAmount": -4608419030833968530,
+              "issuerResponseCode": 4899576608258484273, "transactionOrigin": -3672062706251089117,
+              "transactionReference": -3889283272359665984, "originalTransactionAmount": 4899576608258484273,
+              "refundAmount": 4899576608258484273, "adjustmentAmount": 4899576608258484273,
+              "loyaltyPointsEarned": -4623699604186148714, "loyaltyPointsRedeemed": 1837288917615749048,
+              "reversalIndicator": 3419476633406977519, "authorizationDateTime": -4519168722576299155,
+              "originalAuthorizationCode": -6140510572768235700, "narrative": 3111584332523697174
+            }
+          },
+          "column_stats": {
+            "transactionType": {
+              "dtype": "object", "unique_count": 8,
+              "sample_values": ["AUTHORIZATION", "CASH_ADVANCE", "CAPTURE", "REFUND", "CHARGEBACK"]
+            },
+            "transactionId": {
+              "dtype": "object", "unique_count": 4917,
+              "sample_values": ["TXN1743325830246017882", "TXN1743325812574010282", "TXN1743325881245046345", "TXN1743325867433038516", "TXN1743325845465023447"]
+            },
+            "cardNumber": {
+              "dtype": "int64", "unique_count": 16,
+              "sample_values": ["4024007198765435", "4532756278912349", "4532756278912346", "4024007198765434", "4024007198765436"],
+              "min": 4024007198765432.0, "max": 4532756278912349.0, "mean": 4268757812039077.0, "std_dev": 221874563880955.16
+            },
+            "amount": {
+              "dtype": "float64", "unique_count": 1362,
+              "sample_values": ["0.0", "0.19", "0.38", "-1.66", "-1.09"],
+              "min": -2.0, "max": 9988.52, "mean": 1008.8018900000001, "std_dev": 2387.249471905404
+            },
+            "Stan": {
+              "dtype": "int64", "unique_count": 4448,
+              "sample_values": ["641897", "972744", "875464", "363065", "467102"],
+              "min": 68.0, "max": 999872.0, "mean": 535475.7886, "std_dev": 293999.5724518188
+            },
+            "currencyCode": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["356"],
+              "min": 356.0, "max": 356.0, "mean": 356.0, "std_dev": 0.0
+            },
+            "transactionDate": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["3/23/2025"]
+            },
+            "transactionTime": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["10:00:00"]
+            },
+            "responseCode": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "accountType": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["Savings"]
+            },
+            "authorizationCode": {
+              "dtype": "object", "unique_count": 3546,
+              "sample_values": ["AUTH3111", "AUTH3039", "AUTH4739", "AUTH8277", "AUTH1522"]
+            },
+            "merchantId": {
+              "dtype": "object", "unique_count": 100,
+              "sample_values": ["MERCHANT20", "MERCHANT71", "MERCHANT3", "MERCHANT46", "MERCHANT51"]
+            },
+            "merchantCategoryCode": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["5411"],
+              "min": 5411.0, "max": 5411.0, "mean": 5411.0, "std_dev": 0.0
+            },
+            "terminalId": {
+              "dtype": "object", "unique_count": 10,
+              "sample_values": ["TERM8", "TERM2", "TERM4", "TERM5", "TERM6"]
+            },
+            "cardExpiryDate": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["25-Dec"]
+            },
+            "cardholderName": {
+              "dtype": "object", "unique_count": 5,
+              "sample_values": ["Amit Patel", "Ravi Kumar", "Rajesh Verma", "Priya Sharma", "Neha Singh"]
+            },
+            "accountHolderName": {
+              "dtype": "object", "unique_count": 5,
+              "sample_values": ["Amit Patel", "Ravi Kumar", "Rajesh Verma", "Priya Sharma", "Neha Singh"]
+            },
+            "transactionFee": {
+              "dtype": "float64", "unique_count": 1,
+              "sample_values": ["2.5"],
+              "min": 2.5, "max": 2.5, "mean": 2.5, "std_dev": 0.0
+            },
+            "authorizationIndicator": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["A"]
+            },
+            "acquirerBin": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["123456"],
+              "min": 123456.0, "max": 123456.0, "mean": 123456.0, "std_dev": 0.0
+            },
+            "issuerBin": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["654321"],
+              "min": 654321.0, "max": 654321.0, "mean": 654321.0, "std_dev": 0.0
+            },
+            "merchantName": {
+              "dtype": "object", "unique_count": 5,
+              "sample_values": ["LocalMarket", "MegaShop", "QuickStore", "SuperMart", "GlobalRetail"]
+            },
+            "transactionCode": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["SALE"]
+            },
+            "reasonCode": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "rrn": {
+              "dtype": "float64", "unique_count": 3890,
+              "sample_values": ["20250897463.0", "20250890112.0", "20250895928.0", "20250898095.0", "20250893027.0"],
+              "min": 20250890001.0, "max": 20250899998.0, "mean": 20250894983.097454, "std_dev": 2908.8628590958356
+            },
+            "originalTransactionId": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "acquirerReferenceNumber": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["123ABC"]
+            },
+            "batchNumber": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["BATCH001"]
+            },
+            "dateOfSettlement": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["3/24/2025"]
+            },
+            "settlementAmount": {
+              "dtype": "float64", "unique_count": 4994,
+              "sample_values": ["8672.13", "9745.87", "9124.59", "5627.65", "2226.62"],
+              "min": 102.31, "max": 9999.09, "mean": 5010.73405, "std_dev": 2871.2983720152674
+            },
+            "issuerResponseCode": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "transactionOrigin": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["Online"]
+            },
+            "transactionReference": {
+              "dtype": "object", "unique_count": 3915,
+              "sample_values": ["REF8677", "REF5995", "REF2447", "REF2092", "REF9274"]
+            },
+            "originalTransactionAmount": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "refundAmount": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "adjustmentAmount": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["0"],
+              "min": 0.0, "max": 0.0, "mean": 0.0, "std_dev": 0.0
+            },
+            "loyaltyPointsEarned": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["10"],
+              "min": 10.0, "max": 10.0, "mean": 10.0, "std_dev": 0.0
+            },
+            "loyaltyPointsRedeemed": {
+              "dtype": "int64", "unique_count": 1,
+              "sample_values": ["5"],
+              "min": 5.0, "max": 5.0, "mean": 5.0, "std_dev": 0.0
+            },
+            "reversalIndicator": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["N"]
+            },
+            "authorizationDateTime": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["2025-03-23T10:00:00"]
+            },
+            "originalAuthorizationCode": {
+              "dtype": "float64", "unique_count": 0, "sample_values": [],
+              "min": "NaN", "max": "NaN", "mean": "NaN", "std_dev": "NaN"
+            },
+            "narrative": {
+              "dtype": "object", "unique_count": 1,
+              "sample_values": ["Transaction successful"]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "transformation_rules_from_handoff": [
+    "Ensure date and time fields are combined properly into transaction_date_time or authorization_date_time",
+    "Decimal/Amount fields on Visa may be strings — must normalize to ensure matching works",
+    "Rely on keys like RRN + Auth Code + STAN for fuzzy matching when transaction_id fails",
+    "Don't assume column order; always refer by name"
+  ],
+  "expected_recon_statistics": {
+    "description": "Expected reconciliation outcomes based on prepared test data, in decreasing frequency.",
+    "stats": [
+      { "type": "MATCH", "count": 4500 },
+      { "type": "FUZZY_MATCH", "count": 200 },
+      { "type": "UNMATCHED_SWITCH", "count": 150 },
+      { "type": "UNMATCHED_VISA", "count": 100 },
+      { "type": "WEIRD", "count": 49 }
+    ]
+  },
+  "recommendations_from_handoff": [
+    "Do not force schema to match; allow switch/visa divergence — ETL must align, not source",
+    "Log and tag WEIRD cases explicitly for manual QA",
+    "Ensure batch_id, transaction_date_time, and rrn are always present before tagging a row as MATCH"
+  ]
+}

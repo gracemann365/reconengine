@@ -1,0 +1,162 @@
+[
+  {
+    "transactionId": "TXN_001",
+    "amount": 100.50,
+    "currency": "USD",
+    "transactionDate": 1720636800000,
+    "description": "Online purchase from merchant A",
+    "sourceSystem": "Switch",
+    "transactionType": "DEBIT",
+    "authorizationCode": "AUTH001A",
+    "sourceReferenceId": "REF_SW_001",
+    "accountId": "ACC_SW_001",
+    "additionalMetadata": {
+      "terminalId": "TERM_SW_001",
+      "network": "LocalSwitch"
+    }
+  },
+  {
+    "transactionId": "TXN_001",
+    "amount": 99.99,
+    "currency": "USD",
+    "transactionDate": 1720636805000,
+    "description": "POS transaction at merchant A",
+    "sourceSystem": "Visa",
+    "transactionType": "CREDIT",
+    "authorizationCode": "AUTH001B",
+    "sourceReferenceId": "REF_VISA_001",
+    "accountId": "ACC_VISA_001",
+    "additionalMetadata": {
+      "cardType": "Credit",
+      "issuerBank": "GlobalBank"
+    }
+  },
+  {
+    "transactionId": "TXN_002",
+    "amount": 250.00,
+    "currency": "EUR",
+    "transactionDate": 1720636900000,
+    "description": "International transfer",
+    "sourceSystem": "Switch",
+    "transactionType": "TRANSFER",
+    "authorizationCode": "AUTH002A",
+    "sourceReferenceId": "REF_SW_002",
+    "accountId": "ACC_SW_002",
+    "additionalMetadata": {
+      "country": "DE",
+      "fee": "2.50"
+    }
+  },
+  {
+    "transactionId": "TXN_002",
+    "amount": 249.80,
+    "currency": "EUR",
+    "transactionDate": 1720636902000,
+    "description": "International transfer received",
+    "sourceSystem": "Visa",
+    "transactionType": "TRANSFER",
+    "authorizationCode": "AUTH002B",
+    "sourceReferenceId": "REF_VISA_002",
+    "accountId": "ACC_VISA_002",
+    "additionalMetadata": {
+      "exchangeRate": "1.08",
+      "recipientBank": "EuroBank"
+    }
+  },
+  {
+    "transactionId": "TXN_003",
+    "amount": 50.75,
+    "currency": "GBP",
+    "transactionDate": 1720637000000,
+    "description": "Subscription payment",
+    "sourceSystem": "Switch",
+    "transactionType": "DEBIT",
+    "authorizationCode": "AUTH003A",
+    "sourceReferenceId": "REF_SW_003",
+    "accountId": "ACC_SW_003",
+    "additionalMetadata": {
+      "serviceProvider": "StreamIt",
+      "billingCycle": "monthly"
+    }
+  },
+  {
+    "transactionId": "TXN_003",
+    "amount": 50.75,
+    "currency": "GBP",
+    "transactionDate": 1720637001000,
+    "description": "Subscription charge",
+    "sourceSystem": "Visa",
+    "transactionType": "DEBIT",
+    "authorizationCode": "AUTH003B",
+    "sourceReferenceId": "REF_VISA_003",
+    "accountId": "ACC_VISA_003",
+    "additionalMetadata": {
+      "merchantCategory": "Streaming",
+      "recurring": "true"
+    }
+  },
+  {
+    "transactionId": "TXN_004",
+    "amount": 12.34,
+    "currency": "JPY",
+    "transactionDate": 1720637100000,
+    "description": "Small online purchase",
+    "sourceSystem": "Switch",
+    "transactionType": "DEBIT",
+    "authorizationCode": "AUTH004A",
+    "sourceReferenceId": "REF_SW_004",
+    "accountId": "ACC_SW_004",
+    "additionalMetadata": {
+      "itemCount": "1",
+      "website": "shop.jp"
+    }
+  },
+  {
+    "transactionId": "TXN_004",
+    "amount": 12.34,
+    "currency": "JPY",
+    "transactionDate": 1720637103000,
+    "description": "Online payment",
+    "sourceSystem": "Visa",
+    "transactionType": "DEBIT",
+    "authorizationCode": "AUTH004B",
+    "sourceReferenceId": "REF_VISA_004",
+    "accountId": "ACC_VISA_004",
+    "additionalMetadata": {
+      "paymentMethod": "card",
+      "countryCode": "JP"
+    }
+  },
+  {
+    "transactionId": "TXN_005",
+    "amount": 500.00,
+    "currency": "CAD",
+    "transactionDate": 1720637200000,
+    "description": "Large withdrawal",
+    "sourceSystem": "Switch",
+    "transactionType": "WITHDRAWAL",
+    "authorizationCode": "AUTH005A",
+    "sourceReferenceId": "REF_SW_005",
+    "accountId": "ACC_SW_005",
+    "additionalMetadata": {
+      "atmId": "ATM005",
+      "location": "Downtown"
+    }
+  },
+  {
+    "transactionId": "TXN_005",
+    "amount": 499.50,
+    "currency": "CAD",
+    "transactionDate": 1720637205000,
+    "description": "ATM cash out",
+    "sourceSystem": "Visa",
+    "transactionType": "CASH_ADVANCE",
+    "authorizationCode": "AUTH005B",
+    "sourceReferenceId": "REF_VISA_005",
+    "accountId": "ACC_VISA_005",
+    "additionalMetadata": {
+      "feeApplied": "0.50",
+      "branchId": "BR001"
+    }
+  }
+]

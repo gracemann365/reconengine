@@ -1,0 +1,84 @@
+{
+  "type": "record",
+  "name": "URE",
+  "namespace": "com.grace.recon.common.dto",
+  "doc": "Unreconciled Exception (URE) Data Transfer Object. Represents a transaction that could not be reconciled.",
+  "fields": [
+    {
+      "name": "ureId",
+      "type": "string",
+      "doc": "Unique identifier for the Unreconciled Exception."
+    },
+    {
+      "name": "transactionQuant",
+      "type": "com.grace.recon.common.dto.Quant",
+      "doc": "The original Quant transaction that could not be reconciled."
+    },
+    {
+      "name": "reasonCode",
+      "type": {
+        "type": "enum",
+        "name": "ReasonCode",
+        "symbols": ["NO_EXACT_MATCH", "FUZZY_TOLERANCE_EXCEEDED", "TIMING_DIFFERENCE_FLAG", "MALFORMED_DATA", "MISSING_COUNTERPARTY", "RULE_ENGINE_FAILURE", "OTHER_ISSUE"]
+      },
+      "doc": "Categorized reason for the URE (e.g., NO_EXACT_MATCH, FUZZY_TOLERANCE_EXCEEDED)."
+    },
+    {
+      "name": "reasonDescription",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Detailed, human-readable description of why the URE occurred."
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Timestamp when the URE was identified/created."
+    },
+    {
+      "name": "originalSourceFile",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Name of the original source file where the transaction originated."
+    },
+    {
+      "name": "enrichmentDetails",
+      "type": ["null", {"type": "map", "values": "string"}],
+      "default": null,
+      "doc": "Additional key-value pairs providing context or details for investigation."
+    },
+    {
+      "name": "currentStatus",
+      "type": {
+        "type": "enum",
+        "name": "UreStatus",
+        "symbols": ["PENDING_REVIEW", "IN_PROGRESS", "RESOLVED", "REJECTED", "ESCALATED"]
+      },
+      "default": "PENDING_REVIEW",
+      "doc": "Current status of the URE in the human workflow process."
+    },
+    {
+      "name": "assignedTo",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional, identifier of the user or team assigned to resolve the URE."
+    },
+    {
+      "name": "resolutionNotes",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Notes on the resolution steps taken or outcome."
+    },
+    {
+      "name": "resolutionTimestamp",
+      "type": ["null", {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }],
+      "default": null,
+      "doc": "Timestamp when the URE was resolved."
+    }
+  ]
+}

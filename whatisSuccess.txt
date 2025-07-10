@@ -1,0 +1,48 @@
+To consider the Orchestrator module a success, it must perform the following actions from start to end:
+
+1.  **Module Scaffolding & Startup (CP8.T1):**
+    *   **Action:** The Orchestrator Spring Boot application successfully starts, initializes its components, and logs its readiness.
+    *   **Success Criteria:** Application logs show "Started OrchestratorApplication" and "NormalizationService started and listening to the queue." (or equivalent for Orchestrator's main consumer).
+
+2.  **Consume Unified DTOs (CP8.T2):**
+    *   **Action:** The Orchestrator's Kafka consumer actively listens to and ingests `Quant` DTOs from the `UnifiedDTOs_Input` topic (produced by NaaS). It buffers these incoming `Quant` DTOs in an in-memory `ConcurrentLinkedQueue`.
+    *   **Success Criteria:**
+        *   Orchestrator logs indicate successful consumption of messages from `UnifiedDTOs_Input`.
+        *   The internal buffer's depth increases as messages are consumed.
+        *   Consumer properties (`max_poll_records: 500`, `fetch_min_bytes_kb: 512`, `fetch_max_wait_ms: 100`, `enable_auto_commit: false`, `isolation_level: read_committed`) are correctly applied.
+        *   Backpressure is applied to the Kafka consumer if the in-memory buffer approaches overflow.
+
+3.  **Batch Preparation Arena - Pairing (CP8.T3):**
+    *   **Action:** The service continuously polls the internal queue, groups `Quant` DTOs by their `transactionId` using deterministic hashing, and identifies "husband-wife" pairs (one Switch, one Visa Quant for the same `transactionId`). It manages incomplete pairs with a timeout.
+    *   **Success Criteria:**
+        *   Incoming `Quant` DTOs are correctly routed to their respective `transactionId` groups/buckets using deterministic hashing (e.g., `bucketId = abs(hash(transactionId)) % 16`).
+        *   Each of the 8 processing units maintains its own local, in-memory `Map<String, List<Quant>>`.
+        *   For each `transactionId` where both Switch and Visa `Quant` DTOs arrive, a complete pair is immediately formed when the `List<Quant>` reaches a size of 2.
+        *   Incomplete pairs (only one side of the transaction arrives within the timeout) are correctly identified and flushed after 30 seconds, enriched with metadata (e.g., `incompletePair=true`).
+        *   Internal parallelization (8 processing units) and work distribution are effectively utilized.
+
+4.  **Batch Preparation Arena - Batching (CP8.T3):**
+    *   **Action:** Formed pairs (and incomplete Quants) are collected into batches based on size (100 quants) or timeout (5000 ms) thresholds.
+    *   **Success Criteria:**
+        *   Batches are consistently formed when either the size threshold (100 Quants/pairs) or the time threshold (5000 milliseconds) is met.
+        *   Batches contain correctly grouped `Quant` DTOs.
+        *   The dual-trigger mechanism ensures both efficiency (larger batches when abundant) and low latency (prompt flushing when data flow is slow).
+
+5.  **Produce Matching Interface Batches (CP8.T4):**
+    *   **Action:** The Orchestrator's Kafka producer sends the prepared batches to the `Matching_Input_Topic`.
+    *   **Success Criteria:**
+        *   Orchestrator logs confirm successful production of messages to `Matching_Input_Topic`.
+        *   Messages on `Matching_Input_Topic` are well-formed batches of `Quant` DTOs.
+        *   The `transactionId` of the Quants within the batch is used as the Kafka message key, ensuring partition alignment.
+        *   Producer properties (`acks: all`, `retries: 5`, `batch_size_bytes: 16384`, `linger_ms: 50`, `delivery_timeout_ms: 60000`) are correctly applied.
+
+
+7.  **Produce Escalation Flow (CP8.T6):**
+    *   **Action:** Unreconciled Exceptions (UREs) which are unpaired dtos wanting to be sent escalation 
+    
+8.  **Error Handling and Monitoring (CP8.T7):**
+    *   minila at poc level 
+
+
+9.  **End-to-End Module Verification (CP8.T8):**
+   

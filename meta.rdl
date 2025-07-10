@@ -1,0 +1,51 @@
+// ===================================================================
+// Metadata Definition Language (MetaDL) v1.0
+// Single Source of Truth for the RDL Framework itself.
+// ===================================================================
+
+framework_definition {
+  name = "Reconciliation Definition Language (RDL) Framework"
+  version = "1.4"
+  purpose = "A suite of Domain-Specific Languages to provide a single, unified, human-readable source of truth for the entire Reconciliation Engine PoC."
+  author = "Gracemann365"
+}
+
+rdl_component "reconengine.rdl" {
+  id = "SYSTEM_BLUEPRINT"
+  version = "1.4"
+  purpose = "The master architectural blueprint. Defines all microservices, their components, their interactions, and their core contracts."
+  primary_audience = ["Architects", "Developers"]
+  scope = "System-wide architecture and runtime behavior."
+}
+
+rdl_component "etl.rdl" {
+  id = "DATA_SPECIFICATION"
+  version = "1.0"
+  purpose = "The definitive specification for all data sources and ETL processes. Defines schemas, transformation rules, and data quality expectations."
+  primary_audience = ["Data Engineers", "Developers"]
+  scope = "Data ingestion, transformation, and validation."
+}
+
+rdl_component "pom.rdl" {
+  id = "BUILD_SPECIFICATION"
+  version = "1.0"
+  purpose = "The architectural contract for the Maven build system. Defines rules for dependency management, plugin usage, and enforcer policies."
+  primary_audience = ["Developers", "Build Engineers"]
+  scope = "Build, dependency, and artifact management."
+}
+
+rdl_component "pitfalls.rdl" {
+  id = "KNOWLEDGE_LOG"
+  version = "1.0"
+  purpose = "A living document logging diagnostic mistakes, their root causes, and their resolutions to build institutional knowledge and improve future efficiency."
+  primary_audience = ["All Team Members", "AI Assistants"]
+  scope = "Project history and operational learnings."
+}
+
+rdl_component "meta.rdl" {
+  id = "FRAMEWORK_MANIFEST"
+  version = "1.0"
+  purpose = "The root manifest for the RDL framework itself. Defines the purpose and scope of all other RDL components."
+  primary_audience = ["All Team Members", "AI Assistants"]
+  scope = "Self-description of the documentation framework."
+}

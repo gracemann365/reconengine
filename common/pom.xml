@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -16,27 +17,54 @@
     <name>Reconciliation Engine Common Libraries</name>
     <description>Shared DTOs, utilities, and cross-cutting concerns for Reconciliation Engine microservices.</description>
 
+    <!-- START: Removed sections for compactness and adherence to parent POM principles -->
+    <!-- REMOVED: <properties> section, as resilience4j.version is now managed by parent -->
+    <!-- REMOVED: <dependencyManagement> section, as all dependencies are now managed centrally by the parent POM -->
+    <!-- REMOVED: <repositories> section, as Maven Central is default and Confluent is configured in the parent POM -->
+    <!-- END: Removed sections -->
+
     <dependencies>
+        <!-- Spring Core (Version inherited from parent's Spring Boot BOM) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+        <!-- Explicit Logback dependencies to avoid conflicts -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.14</version> <!-- Using a recent stable version -->
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.4.14</version> <!-- Must match logback-classic version -->
+        </dependency>
+
+        <!-- Lombok (Version inherited from parent's Spring Boot BOM) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
+        <!-- Jackson YAML (Version inherited from parent's dependencyManagement) -->
         <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.confluent</groupId>
-            <artifactId>kafka-avro-serializer</artifactId>
-            <scope>provided</scope>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
         </dependency>
 
+        
+
+        <!-- Resilience4j Core Modules (Versions inherited from parent's Resilience4j BOM) -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-core</artifactId>
@@ -57,20 +85,92 @@
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-micrometer</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
 
+        <!-- JWT (JJWT - Versions inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- OpenTelemetry (Version inherited from parent's dependencyManagement) -->
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+            <version>1.38.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.opentelemetry</groupId>
+                    <artifactId>opentelemetry-exporter-sender-okhttp</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
+        <!-- Metrics with Micrometer (Versions inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+
+        <!-- Logging API (Version inherited from parent's dependencyManagement) -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
+        <!-- Logstash Logback Encoder for structured logging -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version> <!-- Using a recent stable version compatible with Logback 1.4.x -->
+        </dependency>
+
+        <!-- Input Validation / Sanitization (Version inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>org.owasp.esapi</groupId>
+            <artifactId>esapi</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+
+        <!-- Test Dependencies (Versions inherited from parent's JUnit BOM and Spring Boot BOM) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -87,26 +187,21 @@
 
     <build>
         <plugins>
+            
+
+            <!-- Maven Surefire Plugin (Version and dependencies inherited from parent's pluginManagement) -->
             <plugin>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro-maven-plugin</artifactId>
-                <executions>
-                <execution>
-                    <phase>generate-sources</phase>
-                    <goals>
-                        <goal>idl-protocol</goal>
-                        <goal>schema</goal>
-                    </goals>
-                    <configuration>
-                        <sourceDirectory>${project.basedir}/src/main/resources/avro/</sourceDirectory>
-                        <outputDirectory>${project.basedir}/target/generated-sources/avro/</outputDirectory>
-                    </configuration>
-                </execution>
-            </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <!-- Version is now managed by the parent POM's <pluginManagement> -->
+                <!-- Surefire plugin dependencies for JUnit 5 are now managed by the parent POM's <pluginManagement> -->
             </plugin>
+
+            <!-- JaCoCo Maven Plugin (Version inherited from parent's pluginManagement) -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <!-- Version is now managed by the parent POM's <pluginManagement> -->
                 <executions>
                     <execution>
                         <id>default-prepare-agent</id>

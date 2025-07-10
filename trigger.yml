@@ -1,0 +1,71 @@
+# LLM Agent Onboarding Manifest (Trigger File)
+# Version: 2.0 (Live Bootstrap)
+# This file is the primary entry point for any AI agent interacting with this project.
+# Read and parse this file first to understand the project's live state and the purpose of all other knowledge sources.
+
+llm_onboarding_manifest:
+  manifest_version: 2.0
+  description: "A live manifest containing a snapshot of the project's current state, plus a prioritized list of knowledge source files and directives for their use."
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -... [truncated]
+  project_state_snapshot:
+    last_updated: "2025-07-10T07:30:00Z"
+    current_milestone_id: "PROJECT.T2"
+    current_milestone_name: "Develop & Integrate Orchestrator Microservice"
+    next_granular_task_id: "CP8.T1" # Assuming Orchestrator's first granular task will be CP8.T1
+    next_granular_task_name: "Setup Orchestrator Module Structure"
+
+  knowledge_sources:
+    - file_path: "trigger.yml"
+      priority: 0
+      purpose: "This file. The bootstrap manifest for the entire project context."
+      update_trigger: "When the overall project methodology changes or this file's structure is improved."
+      key_data_points: ["project_state_snapshot", "knowledge_sources"]
+
+    - file_path: "reconengine.rdl"
+      priority: 1
+      purpose: "The master architectural blueprint of the entire system."
+      update_trigger: "Only when a fundamental architectural decision is made or changed by the operator."
+      key_data_points: ["project_scope", "architectural_contracts", "service", "library"]
+
+    - file_path: "progressPoc_llm.yml"
+      priority: 1
+      purpose: "The primary, high-level project plan and status tracker."
+      update_trigger: "When a major milestone (e.g., INFRA.T2) is fully completed."
+      key_data_points: ["tasks", "status", "dependencies"]
+
+    - file_path: "taskQueue_granular.json"
+      priority: 2
+      purpose: "The tactical, detailed work queue for the CURRENT major milestone."
+      update_trigger: "When a granular sub-task (e.g., CP6.T1) is completed, or when a new milestone is started."
+      key_data_points: ["completed_tasks", "pending_tasks"]
+
+    - file_path: "limitless.yml"
+      priority: 2
+      purpose: "An analytical profile of the human operator to tailor AI collaboration."
+      update_trigger: "Infrequently; only if the operator's core methodology or interaction patterns change significantly."
+      key_data_points: ["primary_operating_methodology", "key_competencies_demonstrated", "interaction_patterns_with_ai"]
+
+    - file_path: "pom.rdl"
+      priority: 3
+      purpose: "The architectural contract for the Maven build system."
+      update_trigger: "When a new global dependency, plugin, or build rule is mandated for the project."
+      key_data_points: ["dependency_management_rules", "plugin_management_rules", "enforcer_plugin_configuration"]
+
+    - file_path: "confession.rdl"
+      priority: 4
+      purpose: "A historical log of major decisions, achievements, and learnings."
+      update_trigger: "After a significant phase or decision-making process is complete."
+      key_data_points: ["decisions", "achievements", "learnings"]
+
+    - file_path: "pitfalls.rdl"
+      priority: 4
+      purpose: "A historical log of diagnostic mistakes and their resolutions."
+      update_trigger: "After a non-trivial problem is diagnosed and resolved, to prevent recurrence."
+      key_data_points: ["pitfall_entry", "root_cause", "resolution"]
+
+    - file_path: "memoryRECON.json"
+      priority: 4
+      purpose: "A condensed, machine-readable JSON representation of the system architecture."
+      update_trigger: "Should be regenerated if the master `reconengine.rdl` file changes."
+      key_data_points: ["microservice_topology_overview", "architectural_contracts"]

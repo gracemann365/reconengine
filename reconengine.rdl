@@ -67,6 +67,12 @@ library "common" {
     file "URE.java" {
       purpose = "Data Transfer Object for Unreconciled Exceptions."
     }
+    file "ReasonCode.java" {
+      purpose = "Enum for categorizing reasons for UREs."
+    }
+    file "UreStatus.java" {
+      purpose = "Enum for tracking the status of a URE in the workflow."
+    }
     file "ReconMetadata.java" {
       purpose = "Stores aggregated metadata and statistics for a reconciliation job or batch."
     }
@@ -544,7 +550,8 @@ service "matcher" {
           "TIMING_DIFFERENCE_FLAG",
           "MALFORMED_DATA",
           "MISSING_COUNTERPARTY",
-          "RULE_ENGINE_FAILURE"
+          "RULE_ENGINE_FAILURE",
+          "OTHER_ISSUE"
         ]
         enrichment = "Adds detailed metadata explaining the failure, referencing relevant fields."
         output_to_dispatcher = "Handoff to Output Dispatcher for URE routing."
@@ -966,7 +973,7 @@ service "escalator" {
         function = "Implement 'Lean but Powerful Curing Algorithm'"
         detail = "Human-dependent workflow to try and correct URE issues inside Inspection Arena (not automated curing)."
         constraints = {
-          workflow_states = ["PENDING_REVIEW", "IN_PROGRESS", "RESOLVED", "REJECTED"]
+          workflow_states = ["PENDING_REVIEW", "IN_PROGRESS", "RESOLVED", "REJECTED", "ESCALATED"]
         }
       },
       {

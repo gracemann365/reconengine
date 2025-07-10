@@ -1,0 +1,42 @@
+Here are all the issues currently present in the `common` module's build, based on the last `mvn clean install` output:
+
+**I. Logback Configuration Errors (Likely related to `logback-spring.xml` and dependencies):**
+
+1.  **`Logback configuration error detected`**: This is a general error indicating problems with the Logback setup.
+2.  **`Could not create LoggerContextListener of type ch.qos.logback.classic.selector.ContextSelector]. ch.qos.logback.core.util.IncompatibleClassException`**: Indicates an incompatibility issue with the Logback `ContextSelector`.
+3.  **`Could not create component [encoder] of type [net.logstash.logback.encoder.LogstashEncoder] java.lang.ClassNotFoundException: net.logstash.logback.encoder.LogstashEncoder`**: The `LogstashEncoder` class is not found, meaning the `logstash-logback-encoder` dependency is either missing or not correctly configured/versioned.
+4.  **`No encoder set for the appender named "JSON_CONSOLE"`**: The `JSON_CONSOLE` appender is missing an encoder definition, or the defined encoder is not being recognized.
+5.  **`Filename pattern [logs/common-libraries.log.%d{yyyy-MM-dd}.%i.log] contains an integer token converter, i.e. %i, INCOMPATIBLE with this configuration. Remove it.`**: The rolling policy for `JSON_FILE` is still incompatible with the `%i` pattern, despite the change to `SizeAndTimeBasedRollingPolicy`. This suggests a deeper issue with the rolling policy configuration.
+
+**II. Test Failures (Surefire Plugin Failures):**
+
+1.  **`com.grace.recon.common.config.AppConfigTest` (2 Errors):**
+    *   `java.lang.IllegalStateException: Failed to load ApplicationContext`: This is a critical error indicating that the Spring application context cannot be loaded for these tests, likely due to the underlying Logback configuration issues.
+2.  **`com.grace.recon.common.config.FeatureFlagServiceTest` (2 Errors):**
+    *   `java.lang.IllegalStateException: Failed to load ApplicationContext`: Similar to `AppConfigTest`, context loading failure.
+3.  **`com.grace.recon.common.dto.ReconMetadataTest` (1 Failure):**
+    *   `org.opentest4j.AssertionFailedError: expected: <2025-07-09T20:02:11.545256800Z> but was: <2025-07-09T20:02:11.545Z>`: This is an assertion failure, likely due to precision differences when handling timestamps (e.g., `LocalDateTime` vs. `Instant` or database precision).
+4.  **`com.grace.recon.common.dto.URETest` (1 Failure):**
+    *   `org.opentest4j.AssertionFailedError: expected: <2025-07-09T20:02:11.573845600Z> but was: <2025-07-09T20:02:11.573Z>`: Similar timestamp precision issue as `ReconMetadataTest`.
+5.  **`com.grace.recon.common.error.DlqRouterTest` (1 Failure):**
+    *   `Wanted but not invoked: logger.error(...)`: This is a Mockito verification failure, meaning a `logger.error` call that was expected to happen did not. This could be due to the logging system not initializing correctly or the test setup being incorrect.
+6.  **`com.grace.recon.common.monitoring.AuditLoggerTest` (1 Failure):**
+    *   `Wanted but not invoked: logger.info("User Login");`: Another Mockito verification failure, similar to `DlqRouterTest`.
+7.  **`com.grace.recon.common.monitoring.StructuredLoggerTest` (2 Failures):**
+    *   `org.opentest4j.AssertionFailedError: expected: <true> but was: <false>`: These are assertion failures, indicating that the structured logging tests are not producing the expected output.
+8.  **`com.grace.recon.common.monitoring.TraceServiceTest` (7 Errors):**
+    *   `java.lang.NullPointerException: Cannot invoke "io.opentelemetry.api.trace.SpanBuilder.startSpan()" because the return value of "io.opentelemetry.api.trace.Tracer.spanBuilder(String)" is null`: This indicates a problem with the OpenTelemetry setup or its mocking in tests. The `Tracer` instance is likely null or not properly initialized.
+9.  **`com.grace.recon.common.pci.LuhnValidatorTest` (2 Failures):**
+    *   `org.opentest4j.AssertionFailedError: expected: <true> but was: <false>` and `expected: <false> but was: <true>`: These are assertion failures, meaning the Luhn algorithm validation is not working as expected in the tests.
+10. **`com.grace.recon.common.pci.PciAuditServiceTest` (1 Error):**
+    *   `org.mockito.exceptions.base.MockitoException: For com.grace.recon.common.monitoring.AuditLogger, static mocking is already registered in the current thread`: This suggests an issue with how Mockito static mocks are being handled in the test setup/teardown.
+11. **`com.grace.recon.common.resilience.ResilienceAspectsIntegrationTest` (4 Errors):**
+    *   `java.lang.IllegalStateException: Failed to load ApplicationContext`: Similar to `AppConfigTest`, context loading failure.
+12. **`com.grace.recon.common.resilience.ResilienceConfigTest` (6 Errors):**
+    *   `java.lang.IllegalStateException: ApplicationContext failure threshold (1) exceeded`: Similar to `AppConfigTest`, context loading failure.
+13. **`com.grace.recon.common.security.InputSanitizerTest` (4 Errors):**
+    *   `org.owasp.esapi.errors.ConfigurationException: ESAPI.properties could not be loaded by any means. Fail.`: Even with the `ESAPI.properties` file created, it seems ESAPI is still failing to load it. This might indicate an incorrect path or a deeper ESAPI configuration issue.
+14. **`com.grace.recon.common.security.JwtUtilTest` (1 Error):**
+    *   `io.jsonwebtoken.ExpiredJwtException: JWT expired`: This is an expected failure if the JWT token used in the test has a short expiry and the test takes too long or is run after the token expires. This might require adjusting the test's token generation or mocking the time.
+15. **`com.grace.recon.common.validation.YamlRuleEngineTest` (1 Error):**
+    *   `java.lang.NoClassDefFoundError: ch/qos/logback/core/util/StringUtil`: This indicates the Logback issue is still affecting this test, even if the main compilation passed.

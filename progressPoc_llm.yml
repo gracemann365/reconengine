@@ -1,0 +1,124 @@
+
+# Restructured PoC Progress File for Optimized LLM Consumption
+# The structure is a flat map where each task is keyed by its unique ID
+# for direct lookups, making it easier to parse dependencies and statuses.
+
+tasks:
+  # Virtual task representing the pre-existing completed 'common' module
+  common_module_completed:
+    task_name: "Setup and Configure Common Module"
+    status: "COMPLETED"
+    phase_name: "Foundation"
+    module: "common"
+    description: "The core shared library for the project is complete and installed in the local Maven repository."
+    dependencies: []
+
+  INFRA.T1:
+    task_name: "Set up MongoDB Atlas Instance"
+    phase_id: "PROJECT_INFRASTRUCTURE"
+    phase_name: "Core Infrastructure Setup (Local PoC)"
+    module: "infrastructure"
+    status: "COMPLETED"
+    description: "Configure a managed MongoDB Atlas cluster for data persistence requirements of microservices."
+    action_detail: "Configured a free-tier M0 cluster on AWS, set up user credentials, and whitelisted IP for network access, as detailed in atlasSetupReport.yaml."
+    dependencies: []
+
+  INFRA.T2:
+    task_name: "Set up Local Kafka Broker (KRaft Mode)"
+    phase_id: "PROJECT_INFRASTRUCTURE"
+    phase_name: "Core Infrastructure Setup (Local PoC)"
+    module: "infrastructure"
+    status: "COMPLETED"
+    description: "Install and configure a local Kafka broker running in KRaft mode. This modern approach simplifies setup by removing the ZooKeeper dependency."
+    action_detail: "Install Apache Kafka, generate a cluster ID, format storage directories, and start the Kafka server in KRaft mode. Create necessary topics for the PoC and verify connectivity."
+    dependencies:
+      - "INFRA.T1"
+
+  PROJECT.T1:
+    task_name: "Develop & Integrate NaaS Microservice"
+    phase_id: "PROJECT_DEVELOPMENT"
+    phase_name: "Microservice Development & Incremental Integration"
+    module: "naas"
+    status: "COMPLETED"
+    description: "Implement the core data ingestion and normalization logic. Integrate it by building and running it locally to ensure it works with the 'common' module and can process sample data."
+    action_detail: "Focus on implementing Webhook API for EOD file delivery, parsing input (e.g., CSV), transforming to Unified DTOs, and publishing to 'kafka_unified_dtos_input_topic'. Ensure successful local execution/communication with 'common' services."
+    dependencies:
+      - "common_module_completed"
+      - "INFRA.T2"
+
+  PROJECT.T2:
+    task_name: "Develop & Integrate Orchestrator Microservice"
+    phase_id: "PROJECT_DEVELOPMENT"
+    phase_name: "Microservice Development & Incremental Integration"
+    module: "orchestrator"
+    status: "COMPLETED"
+    description: "Implement the central coordinating intelligence for the Reconciliation Engine PoC, managing the flow of Quant DTOs from ingestion by NaaS through to the matching process and subsequent routing of results."
+    action_detail: "Implement Kafka consumer for UnifiedDTOs_Input, the Batch Preparation Arena (deterministic routing, parallelization, in-memory pairing, timeout handling, dual-trigger batch flushing), Kafka producer for Matching_Input_Topic, Kafka consumer for Matching_Output_Topic, Kafka producer for Escalation_Topic, and integrate error handling/monitoring. Ensure successful local execution and data flow from NaaS to Matcher and Escalator."
+    dependencies:
+      - "PROJECT.T1"
+
+  PROJECT.T3:
+    task_name: "Develop & Integrate Matcher Microservice"
+    phase_id: "PROJECT_DEVELOPMENT"
+    phase_name: "Microservice Development & Incremental Integration"
+    module: "matcher"
+    status: "PENDING"
+    description: "Implement the core reconciliation matching logic. Integrate by running it locally with 'common' and 'Orchestrator' to perform actual data matching."
+    action_detail: "Focus on implementing matching algorithms and rules. Ensure successful local execution/communication with 'common' and receive data for processing from 'Orchestrator'."
+    dependencies:
+      - "PROJECT.T2"
+
+  PROJECT.T4:
+    task_name: "Develop & Integrate Reporter Microservice"
+    phase_id: "PROJECT_DEVELOPMENT"
+    phase_name: "Microservice Development & Incremental Integration"
+    module: "reporter"
+    status: "PENDING"
+    description: "Implement the reporting and analytics generation logic. Integrate by running it locally with 'common' and 'Matcher' to produce reports."
+    action_detail: "Focus on generating reconciliation reports (e.g., text, console output). Ensure successful local execution/communication with 'common' and consumption of matching results from 'Matcher'."
+    dependencies:
+      - "PROJECT.T3"
+
+  PROJECT.T5:
+    task_name: "Develop & Integrate Escalator Microservice"
+    phase_id: "PROJECT_DEVELOPMENT"
+    phase_name: "Microservice Development & Incremental Integration"
+    module: "escalator"
+    status: "PENDING"
+    description: "Implement the unreconciled item escalation and notification logic. Integrate by running it locally with 'common' and 'Reporter' to handle exceptions."
+    action_detail: "Focus on defining basic escalation rules and console/log notifications. Ensure successful local execution/communication with 'common' and consumption of UREs from 'Reporter'."
+    dependencies:
+      - "PROJECT.T4"
+
+  PROJECT.T6:
+    task_name: "Develop & Integrate Monitor Microservice"
+    phase_id: "PROJECT_DEVELOPMENT"
+    phase_name: "Microservice Development & Incremental Integration"
+    module: "monitor"
+    status: "PENDING"
+    description: "Implement system health and performance monitoring logic. Integrate by running it locally to collect basic metrics/logs from other running microservices."
+    action_detail: "Focus on collecting and exposing basic metrics/logs (e.g., via Actuator endpoints or simple console logging). Ensure successful local execution/communication with 'common' and data collection from other active services."
+    dependencies:
+      - "PROJECT.T5" # Simplified to a linear dependency for clarity, though it depends on all
+
+  PROJECT.T7:
+    task_name: "End-to-End PoC Demonstration and Validation (Local)"
+    phase_id: "PROJECT_DEVELOPMENT"
+    phase_name: "Microservice Development & Incremental Integration"
+    module: "full-project"
+    status: "PENDING"
+    description: "Perform a complete end-to-end run of the Reconciliation Engine PoC locally, demonstrating the integrated workflow from ingestion to reporting/escalation."
+    action_detail: "Run all microservices concurrently via local Maven commands or individual executable JARs to show the full data flow and reconciliation process in action."
+    dependencies:
+      - "PROJECT.T6"
+
+  PROJECT.T8:
+    task_name: "PoC Documentation & Review"
+    phase_id: "PROJECT_DEVELOPMENT"
+    phase_name: "Microservice Development & Incremental Integration"
+    module: "project-level"
+    status: "PENDING"
+    description: "Prepare high-level documentation for the PoC, including architectural overview, setup instructions, and a summary of capabilities/limitations."
+    action_detail: "Consolidate existing READMEs, create a simple architectural diagram, and summarize the demonstrated functionalities."
+    dependencies:
+      - "PROJECT.T7"

@@ -1,0 +1,386 @@
+--- common/pom.xml ---
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.grace.recon</groupId>
+        <artifactId>reconengine</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>common</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Reconciliation Engine Common Libraries</name>
+    <description>Shared DTOs, utilities, and cross-cutting concerns for Reconciliation Engine microservices.</description>
+
+    <!-- START: Removed sections for compactness and adherence to parent POM principles -->
+    <!-- REMOVED: <properties> section, as resilience4j.version is now managed by parent -->
+    <!-- REMOVED: <dependencyManagement> section, as all dependencies are now managed centrally by the parent POM -->
+    <!-- REMOVED: <repositories> section, as Maven Central is default and Confluent is configured in the parent POM -->
+    <!-- END: Removed sections -->
+
+    <dependencies>
+        <!-- Spring Core (Version inherited from parent's Spring Boot BOM) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Explicit Logback dependencies to avoid conflicts -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.14</version> <!-- Using a recent stable version -->
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.4.14</version> <!-- Must match logback-classic version -->
+        </dependency>
+
+        <!-- Lombok (Version inherited from parent's Spring Boot BOM) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Jackson YAML (Version inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+
+        <!-- Avro (Version inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+        </dependency>
+
+        <!-- Kafka Avro Serializer (Version inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Resilience4j Core Modules (Versions inherited from parent's Resilience4j BOM) -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-circuitbreaker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-retry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-timelimiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-micrometer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- JWT (JJWT - Versions inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- OpenTelemetry (Version inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+
+        <!-- Metrics with Micrometer (Versions inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+
+        <!-- Logging API (Version inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Logstash Logback Encoder for structured logging -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version> <!-- Using a recent stable version compatible with Logback 1.4.x -->
+        </dependency>
+
+        <!-- Input Validation / Sanitization (Version inherited from parent's dependencyManagement) -->
+        <dependency>
+            <groupId>org.owasp.esapi</groupId>
+            <artifactId>esapi</artifactId>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
+        </dependency>
+
+        <!-- Test Dependencies (Versions inherited from parent's JUnit BOM and Spring Boot BOM) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Avro Maven Plugin (Version inherited from parent's pluginManagement) -->
+            <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+                <!-- Version is now managed by the parent POM's <pluginManagement> -->
+                <executions>
+                    <execution>
+                        <id>avro-schema-generation</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>schema</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.basedir}/src/main/resources/avro/</sourceDirectory>
+                            <outputDirectory>${project.basedir}/target/generated-sources/avro/</outputDirectory>
+                            <imports>
+                                <import>${project.basedir}/src/main/resources/avro/Quant.avsc</import>
+                            </imports>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>avro-protocol-generation</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>idl-protocol</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.basedir}/src/main/resources/avro/</sourceDirectory>
+                            <outputDirectory>${project.basedir}/target/generated-sources/avro/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Surefire Plugin (Version and dependencies inherited from parent's pluginManagement) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <!-- Version is now managed by the parent POM's <pluginManagement> -->
+                <!-- Surefire plugin dependencies for JUnit 5 are now managed by the parent POM's <pluginManagement> -->
+            </plugin>
+
+            <!-- JaCoCo Maven Plugin (Version inherited from parent's pluginManagement) -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <!-- Version is now managed by the parent POM's <pluginManagement> -->
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.90</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.90</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+--- common/src/main/resources/logback-spring.xml ---
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <throwableConverter class="net.logstash.logback.encoder.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>20</maxDepthPerThrowable>
+                <maxLength>1024</maxLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE:-${LOG_PATH:-logs}/common-libraries.log}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy"> <!-- Changed class here -->
+            <fileNamePattern>${LOG_FILE:-${LOG_PATH:-logs}/common-libraries}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize> <!-- Added max file size -->
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <throwableConverter class="net.logstash.logback.encoder.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>20</maxDepthPerThrowable>
+                <maxLength>1024</maxLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="JSON_CONSOLE"/>
+        <appender-ref ref="JSON_FILE"/>
+    </root>
+
+    <logger name="com.grace.recon" level="INFO"/>
+
+    <!-- Spring Boot specific logging -->
+    <logger name="org.springframework.boot" level="INFO"/>
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="org.apache.avro" level="WARN"/>
+
+    <!-- MDC for distributed tracing -->
+    <contextListener class="ch.qos.logback.classic.selector.ContextSelector"/>
+    <property name="LOG_EXCEPTION_CONVERSION_WORD" value="%wEx"/>
+
+</configuration>
+--- common/src/test/resources/logback-spring.xml ---
+File not found: C:/Users/Gracemann365/Desktop/reconengine/common/src/test/resources/logback-spring.xml
+--- common/src/test/resources/application.yml ---
+File not found: C:/Users/Gracemann365/Desktop/reconengine/common/src/test/resources/application.yml
+--- common/src/main/resources/ESAPI.properties ---
+# ESAPI.properties - Minimal configuration for testing purposes
+# This file is required by OWASP ESAPI for its functionality.
+# For production environments, a comprehensive configuration is necessary.
+
+ESAPI.Logger=org.owasp.esapi.reference.Log4JLogger
+ESAPI.Encoder=org.owasp.esapi.reference.DefaultEncoder
+ESAPI.Authenticator=org.owasp.esapi.reference.DefaultAuthenticator
+ESAPI.AccessController=org.owasp.esapi.reference.DefaultAccessController
+ESAPI.IntrusionDetector=org.owasp.esapi.reference.DefaultIntrusionDetector
+ESAPI.Randomizer=org.owasp.esapi.reference.DefaultRandomizer
+ESAPI.Executor=org.owasp.esapi.reference.DefaultExecutor
+ESAPI.HTTPUtilities=org.owasp.esapi.reference.DefaultHTTPUtilities
+ESAPI.Validator=org.owasp.esapi.reference.DefaultValidator
+ESAPI.Encryptor=org.owasp.esapi.reference.crypto.JavaEncryptor
+ESAPI.User=org.owasp.esapi.reference.DefaultUser
+
+# Master Salt and Encryption Key (CHANGE THESE FOR PRODUCTION!)
+# These are placeholders for testing.
+ESAPI.MasterSalt=AAAAAAAAAAAAAAAAAAAAAQ==
+ESAPI.MasterKey=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+
+# Other properties can be added as needed for specific ESAPI features.
+--- common/src/test/java/com/grace/recon/common/config/AppConfigTest.java ---
+package com.grace.recon.common.config;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest(classes = AppConfig.class)
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "kafka.bootstrap.servers=test-kafka:9092",
+    "common.buffer.capacity=5000"
+})
+class AppConfigTest {
+
+    @Autowired
+    private AppConfig appConfig;
+
+    @Test
+    void testKafkaBootstrapServersOverriddenValue() {
+        assertEquals("test-kafka:9092", appConfig.getKafkaBootstrapServers());
+    }
+
+    @Test
+    void testCommonBufferCapacityOverriddenValue() {
+        assertEquals(5000, appConfig.getCommonBufferCapacity());
+    }
+}

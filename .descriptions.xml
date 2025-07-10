@@ -1,0 +1,5 @@
+<inspections profile="Maven Model Inspection"><group name="Maven" path=""><inspection shortName="MavenModelInspection" defaultSeverity="ERROR" displayName="Maven Model Inspection" enabled="true" language="XML" pluginId="org.jetbrains.idea.maven" pluginVersion="251.26927.53" isGlobalTool="false">&lt;html&gt;
+&lt;body&gt;
+&lt;p&gt;Reports resolution problems in a Maven model&lt;/p&gt;
+&lt;!-- tooltip end --&gt;&lt;/body&gt;
+&lt;/html&gt;</inspection></group></inspections>
