@@ -1,0 +1,13 @@
+exactMatch:
+  keys:
+    - "transactionId"
+    - "amount"
+    - "currency"
+fuzzyMatch:
+  tolerances:
+    - field: "description"
+      algorithm: "levenshtein"
+      value: 2
+    - field: "amount"
+      algorithm: "absolute_variance"
+      value: 0.05

@@ -1,6 +1,22 @@
 {
   "pending_tasks": [
-    "pending_tasks": [],
+    {
+      "phase_id": "CP10",
+      "phase_name": "Reporter Service Implementation",
+      "status": "PENDING",
+      "tasks": [
+        {
+          "task_id": "CP10.T1",
+          "task_name": "Setup Reporter Module Structure",
+          "status": "PENDING",
+          "type": "SETUP",
+          "module": "reporter",
+          "description": "Create the reporter-service Maven module, a basic pom.xml with dependencies (Spring Boot, Kafka, common), and standard directory structure.",
+          "dependencies": ["CP9.T7"]
+        }
+      ]
+    }
+  ],
   "completed_tasks": [
     {
       "phase_id": "CP1",
@@ -206,5 +222,58 @@
           "dependencies": ["CP8.T7"]
         }
       ]
+    },
+    {
+      "phase_id": "CP9",
+      "phase_name": "Matcher Service Implementation",
+      "status": "COMPLETED",
+      "tasks": [
+        {
+          "task_id": "CP9.T1",
+          "task_name": "Setup Matcher Module Structure",
+          "status": "COMPLETED",
+          "type": "SETUP",
+          "module": "matcher",
+          "description": "Created the matcher-service Maven module, a pom.xml with necessary dependencies (Spring Boot, Kafka, common module), and the standard Java project directory structure.",
+          "dependencies": ["CP8.T8"]
+        },
+        {
+          "task_id": "CP9.T2",
+          "task_name": "Implement Kafka Consumer for Matching Input",
+          "status": "COMPLETED",
+          "type": "IMPLEMENTATION",
+          "module": "matcher",
+          "description": "Implemented a Kafka consumer to listen to the Matching_Input_Topic, configured for reliable, at-least-once processing with specified properties, and buffering consumed DTOs into an internal ConcurrentLinkedQueue with backpressure.",
+          "dependencies": ["CP9.T1"]
+        },
+        {
+          "task_id": "CP9.T3",
+          "task_name": "Define Matching Logic & Rules Engine",
+          "status": "COMPLETED",
+          "type": "IMPLEMENTATION",
+          "module": "matcher",
+          "description": "Developed the core matching service (CME) to process pre-grouped transaction sets, implementing a waterfall matching algorithm with Exact Match, Fuzzy Match, and Unmatched Exception Router modules. Implemented rule management (YAML-based DSL, loaded at startup, refresh via Actuator) and internal state lookups (matching rule cache, reference data cache).",
+          "dependencies": ["CP9.T2"]
+        },
+        {
+          "task_id": "CP9.T4",
+          "task_name": "Define Output DTOs",
+          "status": "COMPLETED",
+          "type": "IMPLEMENTATION",
+          "module": "matcher",
+          "description": "Defined the data structures for the matching results: Matched Quant, Fuzzy Matched Quant, and URE Quant as plain POJOs in the 'common' module, accessible by other services.",
+          "dependencies": ["CP9.T3"]
+        },
+        {
+          "task_id": "CP9.T7",
+          "task_name": "End-to-End Module Verification",
+          "status": "COMPLETED",
+          "type": "VERIFICATION",
+          "module": "matcher",
+          "description": "Conduct a full, local end-to-end test of the Matcher service. This involves: 1. Unit tests for matching algorithms and rule logic. 2. Integration tests for Kafka consumer/producer interactions, rule loading, and internal component interactions. 3. Performance tests simulating transaction matching up to 10,000 Quants/day to validate SLA slice and latency targets. 4. Contract tests for schema compatibility with Matching_Input_Topic and all output topics (Matching_Output_Topic, Escalation_Topic, Recon_Metadata_Topic). Verify that correct Matched, Fuzzy Matched, and URE messages are produced to their respective output topics, and failed messages are routed to the DLQ.",
+          "dependencies": ["CP9.T6"]
+        }
+      ]
     }
   ]
+}

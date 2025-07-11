@@ -1,547 +1,183 @@
 {
-  "version": "3.0",
-  "lastUpdated": "2025-07-10T14:15:00Z",
-  "agentDiagnosticDirectives": [
+  "version": "1.1",
+  "lastUpdated": "2025-07-12T10:00:00Z",
+  "agentProhibitions": [
     {
-      "id": "D-001",
-      "title": "Verify Environment Before Blaming Configuration",
-      "patternSource": ["BUILD-001", "DEP-001", "APP-004", "INFRA-001"],
-      "trigger": "A tool (e.g., a Maven plugin) fails despite a seemingly correct configuration file.",
-      "checksToPerform": [
-        "Filesystem Check: Verify that all expected source/target directories and files exist.",
-        "Cache Check: Consider that a local cache (e.g., .m2 repository) may be stale or corrupt. Attempt to clear or force-update the cache (e.g., with `mvn -U`).",
-        "Permissions Check: Consider potential file system read/write permission issues.",
-        "Conclusion Mandate: Do not conclude a configuration file is the problem until the execution environment has been validated."
-      ]
+      "id": "PROHIBIT-001",
+      "rule": "NEVER use simple string splitting (e.g., split(',')) for complex data formats like SQL, CSV, or quoted/escaped data",
+      "reason": "Fails on edge cases like quoted commas or NULL values (e.g., ETL-002)",
+      "action": "Use format-aware parsers or robust regex"
     },
     {
-      "id": "D-002",
-      "title": "Consult Tool-Specific Documentation for Nuanced Behavior",
-      "patternSource": [
-        "BUILD-002",
-        "APP-001",
-        "APP-002",
-        "APP-003",
-        "ETL-001"
-      ],
-      "trigger": "A configuration change has an unexpected or incorrect effect, or a common solution doesn't work.",
-      "checksToPerform": [
-        "Read the Fine Print: Do not rely on basic syntax knowledge. Consult the official documentation for the specific tool/plugin version being used.",
-        "Check for Scoping Issues: Investigate if the configuration is being applied in a wider or narrower scope than intended (e.g., Maven goal inheritance).",
-        "Search for Known Issues: Search for existing bug reports or articles related to the specific tool, version, and problem."
-      ]
+      "id": "PROHIBIT-002",
+      "rule": "NEVER assume external systems (e.g., Kafka, databases) work without isolated testing",
+      "reason": "Misconfigurations cause silent failures (e.g., INFRA-001)",
+      "action": "Test independently with console tools before integration"
     },
     {
-      "id": "D-003",
-      "title": "Escalate to Holistic Analysis for Complex Failures",
-      "patternSource": ["BUILD-003", "APP-005", "ETL-002", "INFRA-002"],
-      "trigger": "When two or more simple, iterative fixes fail to resolve an issue, especially related to dependencies or integration.",
-      "checksToPerform": [
-        "Stop Iterating: Do not attempt a third simple fix. Acknowledge that the problem is complex.",
-        "Analyze the Graph: Use tools to visualize the entire dependency graph (e.g., `mvn dependency:tree`) to look for version conflicts or unexpected transitive dependencies.",
-        "Isolate the Problem: Attempt to create a minimal reproducible example to isolate the conflicting components.",
-        "Consider Pragmatic Workarounds: If a full solution is too time-consuming, evaluate and propose a documented, temporary workaround (e.g., `-DskipTests`) to maintain project velocity."
-      ]
+      "id": "PROHIBIT-003",
+      "rule": "NEVER change types (e.g., DTOs) without a full dependency audit",
+      "reason": "Cascading errors across serialization and tests (e.g., ETL-003)",
+      "action": "Map all affected components before changes"
+    },
+    {
+      "id": "PROHIBIT-004",
+      "rule": "NEVER rely on default serialization for complex objects",
+      "reason": "Mismatches cause runtime exceptions (e.g., KAFKA-001)",
+      "action": "Explicitly configure serializers/deserializers"
+    },
+    {
+      "id": "PROHIBIT-005",
+      "rule": "NEVER blame configuration before checking the environment",
+      "reason": "Missing directories or permissions masquerade as config issues (e.g., BUILD-001)",
+      "action": "Verify files, permissions, and processes first"
+    },
+    {
+      "id": "PROHIBIT-006",
+      "rule": "NEVER iterate more than two simple fixes without deeper analysis",
+      "reason": "Masks root causes and wastes time (e.g., BUILD-003)",
+      "action": "Escalate to dependency graphs or minimal examples after two failures"
+    },
+    {
+      "id": "PROHIBIT-007",
+      "rule": "NEVER deploy unsecured endpoints that modify core logic",
+      "reason": "Exposes system to unauthorized changes (e.g., CP9.T3 lesson)",
+      "action": "Secure endpoints with role-based authentication"
+    },
+    {
+      "id": "PROHIBIT-008",
+      "rule": "NEVER attempt to fix test-specific dependency issues by modifying main application code or introducing conflicting test configurations",
+      "reason": "Leads to a destructive trial-and-error loop, breaks core application functionality, and creates BeanDefinitionOverrideException",
+      "action": "Understand Spring Test Context, use programmatic test-only consumers, and ensure unified configuration"
     }
   ],
-  "pitfallKnowledgeBase": [
+  "criticalErrorPatterns": [
     {
-      "category": "Build System",
-      "pitfalls": [
-        {
-          "id": "BUILD-001",
-          "title": "Plugin Fails Due to Missing Directory Structure",
-          "date": "2025-07-07",
-          "severity": "MEDIUM",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "common/pom.xml",
-            "common/src/main/resources/avro"
-          ],
-          "description": "The 'avro-maven-plugin' failed during the build. Initial diagnosis focused incorrectly on the POM configuration itself, which appeared valid.",
-          "rootCauseAnalysis": {
-            "type": "Environment Mismatch",
-            "summary": "The plugin expected a source directory (`src/main/resources/avro`) that did not exist in the filesystem. The failure was due to an implicit environmental prerequisite of the plugin, not a flaw in the POM syntax."
-          },
-          "resolution": {
-            "immediateFix": "The missing directory 'common/src/main/resources/avro' was created manually.",
-            "preventionStrategy": "Future agents must follow directive D-001."
-          }
-        },
-        {
-          "id": "BUILD-002",
-          "title": "Plugin Configuration Applied to Incorrect Goal",
-          "date": "2025-07-07",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "common/pom.xml",
-            "common/src/main/resources/avro/URE.avsc"
-          ],
-          "description": "The Avro plugin failed to compile 'URE.avsc' due to a dependency on 'Quant.avsc'. An attempt to fix this by adding a global <imports> tag to the plugin configuration failed unexpectedly.",
-          "rootCauseAnalysis": {
-            "type": "Configuration Error",
-            "summary": "The <imports> tag was applied to the parent <configuration> block of the avro-maven-plugin, causing it to be inherited by all goals, including idl-protocol, where it was not valid. The import was only needed for the schema goal."
-          },
-          "resolution": {
-            "immediateFix": "The plugin configuration was split into two distinct <execution> blocks, one for the schema goal and one for idl-protocol. The <imports> tag was moved to be only within the schema execution's configuration.",
-            "preventionStrategy": "Future agents must follow directive D-002."
-          }
-        },
-        {
-          "id": "BUILD-003",
-          "title": "Surefire Test Discovery Failure with JUnit 5",
-          "date": "2025-07-07",
-          "severity": "HIGH",
-          "status": "WORKAROUND",
-          "affectedArtifacts": ["pom.xml", "common/pom.xml"],
-          "description": "The mvn test command consistently failed with a 'TestEngine with ID 'junit-jupiter' failed to discover tests' error, despite apparently correct dependencies.",
-          "rootCauseAnalysis": {
-            "type": "Dependency Conflict",
-            "summary": "A deep and difficult-to-diagnose conflict exists between the versions of the Maven Surefire plugin, the Spring Boot parent POM, and the JUnit 5 platform dependencies. The exact conflict point is still unknown."
-          },
-          "resolution": {
-            "immediateFix": "The pragmatic workaround is to bypass the test execution phase entirely using the -DskipTests flag during Maven builds. This unblocks development of dependent modules.",
-            "longTermPlan": "A dedicated investigation is required to find a compatible set of versions for all testing-related dependencies and plugins. This is tracked as significant technical debt.",
-            "preventionStrategy": "Future agents must follow directive D-003."
-          }
-        }
-      ]
+      "id": "PATTERN-001",
+      "title": "Incomplete Type/Dataflow Audit",
+      "severity": "CRITICAL",
+      "description": "Changing types without tracing downstream effects causes cascading errors",
+      "whyTricky": "Hidden dependencies break silently",
+      "prevention": [
+        "Map ALL affected components before type changes",
+        "Test compatibility forward and backward"
+      ],
+      "examples": ["ETL-003", "AGENT-001"]
     },
     {
-      "category": "Dependency Management",
-      "pitfalls": [
-        {
-          "id": "DEP-001",
-          "title": "Transient Dependency Resolution Failure",
-          "date": "2025-07-07",
-          "severity": "MEDIUM",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["escalator/pom.xml"],
-          "description": "The build failed with a 'Could not resolve dependencies' error that seemed transient, as network connectivity was confirmed to be stable.",
-          "rootCauseAnalysis": {
-            "type": "Local Cache Corruption",
-            "summary": "The local Maven repository (`.m2`) likely contained a corrupted or incomplete artifact for a transient dependency, or the metadata was stale. Standard builds did not force a re-download."
-          },
-          "resolution": {
-            "immediateFix": "The build was executed with the -U flag (mvn clean install -U), which forces Maven to update all snapshots and releases from the remote repositories, bypassing the potentially stale local cache.",
-            "preventionStrategy": "Future agents must follow directive D-001."
-          }
-        }
-      ]
+      "id": "PATTERN-002",
+      "title": "Naive Data Parsing",
+      "severity": "CRITICAL",
+      "description": "Using split(',') on complex data fails on edge cases",
+      "whyTricky": "Works for simple cases but fails on edge cases",
+      "prevention": ["Use dedicated parsers or regex"],
+      "examples": ["ETL-002"]
     },
     {
-      "category": "Application Runtime",
-      "pitfalls": [
-        {
-          "id": "APP-001",
-          "title": "Missing Spring Boot Main Class",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "naas/src/main/java/com/grace/recon/naas/NaasApplication.java"
-          ],
-          "description": "Spring Boot application failed to start due to a missing or empty main application class (@SpringBootApplication and main method).",
-          "rootCauseAnalysis": {
-            "type": "Incomplete Scaffolding",
-            "summary": "The initial module setup did not include the standard Spring Boot application entry point, leading to a non-executable application."
-          },
-          "resolution": {
-            "immediateFix": "Manually added the @SpringBootApplication annotation and public static void main method to NaasApplication.java.",
-            "preventionStrategy": "Ensure new Spring Boot modules are scaffolded with a complete application entry point. Future agents should verify this immediately after module creation."
-          }
-        },
-        {
-          "id": "APP-002",
-          "title": "Logback Version Conflict",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["naas/pom.xml", "common/pom.xml"],
-          "description": "Application startup failed with NoClassDefFoundError and NoSuchFieldError related to Logback classes, indicating a version mismatch.",
-          "rootCauseAnalysis": {
-            "type": "Transitive Dependency Conflict",
-            "summary": "Different versions of Logback were being pulled in by various Spring Boot starters and the common module, leading to incompatible class definitions at runtime."
-          },
-          "resolution": {
-            "immediateFix": "Explicitly excluded spring-boot-starter-logging from spring-boot-starter in naas/pom.xml and explicitly defined consistent logback-classic and logback-core versions (1.4.14) in naas/pom.xml to match common.",
-            "preventionStrategy": "When encountering logging-related NoClassDefFoundError or NoSuchFieldError, investigate transitive dependencies and enforce consistent versions or exclusions."
-          }
-        },
-        {
-          "id": "APP-003",
-          "title": "Unsatisfied Bean Dependencies (Metrics/Tracing)",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "naas/pom.xml",
-            "naas/src/main/java/com/grace/recon/naas/NaasApplication.java",
-            "common/src/main/java/com/grace/recon/common/monitoring/MetricService.java",
-            "common/src/main/java/com/grace/recon/common/monitoring/TraceService.java"
-          ],
-          "description": "Application failed to start due to UnsatisfiedDependencyException for MeterRegistry and OpenTelemetry beans required by MetricService and TraceService.",
-          "rootCauseAnalysis": {
-            "type": "Missing Auto-Configuration/Component Scan",
-            "summary": "Spring Boot's auto-configuration for metrics and tracing was not active in the naas module, and the common module's beans were not being scanned by naas."
-          },
-          "resolution": {
-            "immediateFix": "Added spring-boot-starter-actuator to naas/pom.xml to enable MeterRegistry auto-configuration. Added @ComponentScan(basePackages = {\"com.grace.recon.naas\", \"com.grace.recon.common\"}) to NaasApplication.java to ensure common module beans are discovered.",
-            "preventionStrategy": "Ensure all necessary Spring Boot starters for desired features (e.g., Actuator for metrics) are included. Verify @ComponentScan covers all required base packages for bean discovery across modules."
-          }
-        },
-        {
-          "id": "APP-004",
-          "title": "Port Already In Use",
-          "date": "2025-07-10",
-          "severity": "MEDIUM",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["N/A (Environment Issue)"],
-          "description": "Spring Boot application failed to start with 'Web server failed to start. Port 8080 was already in use.' error.",
-          "rootCauseAnalysis": {
-            "type": "Environmental Conflict",
-            "summary": "A previous instance of the application or another process was still occupying the default port (8080), preventing the new instance from binding to it."
-          },
-          "resolution": {
-            "immediateFix": "Identified and terminated the process occupying port 8080 (usually a lingering java.exe process from a previous run).",
-            "preventionStrategy": "Always ensure previous application instances are fully stopped before attempting to restart. Use Ctrl+C in the terminal or netstat/taskkill to identify and terminate rogue processes."
-          }
-        },
-        {
-          "id": "APP-005",
-          "title": "Conflicting Bean Definition",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "naas/src/main/java/com/grace/recon/naas/NaasController.java",
-            "naas/src/main/java/com/grace/recon/naas/controller/NaasController.java"
-          ],
-          "description": "Application failed to start due to ConflictingBeanDefinitionException for naasController.",
-          "rootCauseAnalysis": {
-            "type": "Duplicate Class Definition",
-            "summary": "Two NaasController.java files existed in different packages (com.grace.recon.naas and com.grace.recon.naas.controller), leading to Spring attempting to create two beans with the same name."
-          },
-          "resolution": {
-            "immediateFix": "Removed the duplicate NaasController.java file from the incorrect package (com.grace.recon.naas).",
-            "preventionStrategy": "Maintain strict adherence to package structure and avoid creating duplicate class files. IDEs usually prevent this, but manual file operations can introduce it."
-          }
-        }
-      ]
+      "id": "PATTERN-003",
+      "title": "External System Assumptions",
+      "severity": "CRITICAL",
+      "description": "Assuming external systems are ready without testing leads to failures",
+      "whyTricky": "Partial configs deceive into thinking it’s working",
+      "prevention": ["Test external systems in isolation first"],
+      "examples": ["INFRA-001"]
     },
     {
-      "category": "Application Packaging",
-      "pitfalls": [
-        {
-          "id": "PACK-001",
-          "title": "Non-Executable Spring Boot JAR",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "naas/pom.xml",
-            "target/naas-1.0.0-SNAPSHOT.jar"
-          ],
-          "description": "Attempting to run the Spring Boot application with java -jar resulted in 'no main manifest attribute' error.",
-          "rootCauseAnalysis": {
-            "type": "Missing Maven Plugin Goal",
-            "summary": "The spring-boot-maven-plugin was present but its repackage goal, which creates the executable 'fat JAR' with all dependencies and the correct manifest, was not explicitly configured or triggered."
-          },
-          "resolution": {
-            "immediateFix": "Explicitly added the repackage goal to the spring-boot-maven-plugin's executions in naas/pom.xml.",
-            "preventionStrategy": "Always ensure the spring-boot-maven-plugin's repackage goal is configured for executable JARs. Verify JAR contents with jar -tf if java -jar fails."
-          }
-        },
-        {
-          "id": "PACK-002",
-          "title": "Resource File Not Found in Packaged JAR",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "naas/src/main/resources/VISAClearingTestSubset.csv"
-          ],
-          "description": "Application failed to find resource file (VISAClearingTestSubset.csv) using getResourceAsStream() after packaging, despite it being present in source directory.",
-          "rootCauseAnalysis": {
-            "type": "Filename Mismatch/Double Extension",
-            "summary": "The file was incorrectly named VISAClearingTestSubset.csv.csv inside the packaged JAR, leading to a mismatch with the requested filename."
-          },
-          "resolution": {
-            "immediateFix": "Corrected the filename in naas/src/main/resources to VISAClearingTestSubset.csv (removing the double extension) and rebuilt the JAR.",
-            "preventionStrategy": "Be vigilant about file extensions, especially on Windows where extensions might be hidden by default. Use jar -tf to inspect packaged resources when getResourceAsStream() returns null."
-          }
-        }
-      ]
+      "id": "PATTERN-004",
+      "title": "Configuration Scope Confusion",
+      "severity": "HIGH",
+      "description": "Misapplying config breaks builds",
+      "whyTricky": "Docs assume knowledge of inheritance rules",
+      "prevention": ["Read version-specific docs for scope rules"],
+      "examples": ["BUILD-002"]
     },
     {
-      "category": "Data Processing/ETL",
-      "pitfalls": [
-        {
-          "id": "ETL-001",
-          "title": "Kafka Serialization Failure for Avro DTOs",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "naas/pom.xml",
-            "naas/src/main/java/com/grace/recon/naas/config/KafkaProducerConfig.java",
-            "common/src/main/resources/avro/Quant.avsc"
-          ],
-          "description": "Kafka producer failed to serialize Quant DTOs to JSON with 'Can't serialize data' error, despite Quant.avsc being valid.",
-          "rootCauseAnalysis": {
-            "type": "Missing Jackson Module",
-            "summary": "The Jackson JsonSerializer used by Spring Kafka did not inherently understand how to serialize Avro-generated classes (like Quant) into JSON."
-          },
-          "resolution": {
-            "immediateFix": "Added jackson-dataformat-avro dependency to naas/pom.xml and configured ObjectMapper in KafkaProducerConfig.java to register AvroModule.",
-            "preventionStrategy": "When serializing complex or generated objects (like Avro DTOs) with Jackson, ensure the appropriate Jackson dataformat modules are included and registered with the ObjectMapper."
-          }
-        },
-        {
-          "id": "ETL-002",
-          "title": "Naive SQL INSERT Parsing Leads to Data Type Errors",
-          "date": "2025-07-10",
-          "severity": "CRITICAL",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "naas/src/main/java/com/grace/recon/naas/service/EtlService.java",
-            "naas/src/main/resources/switchSideTestSubset.sql"
-          ],
-          "description": "Parsing of SQL INSERT statements in EtlService failed with NumberFormatException (e.g., 'Character A is neither a decimal digit number...') due to incorrect field extraction.",
-          "rootCauseAnalysis": {
-            "type": "Flawed String Splitting Logic",
-            "summary": "The String.split(',') method was used to parse SQL VALUES clauses. This is naive as it doesn't account for commas within quoted strings or NULL values, leading to a shifted and malformed values array and incorrect data being passed to type conversions."
-          },
-          "resolution": {
-            "immediateFix": "Replaced the simple split(',') with a robust SQL-aware regex split ,(?=(?:[^']*'[^']*')*[^']*$) and enhanced cleanSqlValue to handle NULL and trim quotes. Also ensured switchSideTestSubset.sql contained a mix of valid and invalid data for testing DLQ.",
-            "preventionStrategy": "Never use simple string splitting for complex, structured data formats like SQL VALUES clauses or CSVs. Always use dedicated parsers or robust regex that account for quoting and escaping rules. Implement comprehensive logging for parsing steps to quickly identify problematic values and their indices."
-          }
-        },
-        {
-          "id": "ETL-003",
-          "title": "Quant DTO Refactoring and Type Mismatch Errors",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "common/src/main/java/com/grace/recon/common/dto/Quant.java",
-            "naas/src/main/java/com/grace/recon/naas/kafka/KafkaPublisherService.java",
-            "naas/src/main/java/com/grace/recon/naas/service/NormalizationService.java",
-            "common/pom.xml",
-            "common/src/main/resources/avro/Quant.avsc"
-          ],
-          "description": "Refactoring the Quant DTO from an Avro-generated class to a plain POJO led to multiple compilation and serialization errors.",
-          "rootCauseAnalysis": {
-            "type": "Incomplete Type/Dataflow Audit",
-            "summary": "The initial refactoring of Quant from Avro to POJO did not fully account for all downstream type dependencies and serialization requirements. This resulted in: 1) KafkaTemplate type mismatches, 2) incorrect Instant to long conversions, and 3) lingering Avro-related code in KafkaProducerConfig and test files."
-          },
-          "resolution": {
-            "immediateFix": "1) Reverted KafkaTemplate to accept Object, 2) ensured Instant to long conversion using .toEpochMilli(), 3) removed all Avro dependencies, plugins, and generated files, 4) removed problematic test files. The strategy shifted to using JsonSerializer for simplicity in PoC.",
-            "preventionStrategy": "Perform a comprehensive type and dataflow audit before introducing significant type changes. For PoC, prioritize simpler serialization (JSON) over complex ones (Avro with Schema Registry) unless explicitly required. Ensure all related code (services, configs, tests) are updated consistently."
-          }
-        }
-      ]
-    },
-    {
-      "category": "External System Connectivity",
-      "pitfalls": [
-        {
-          "id": "INFRA-001",
-          "title": "Kafka Broker Unreachable/Misconfigured",
-          "date": "2025-07-10",
-          "severity": "CRITICAL",
-          "status": "RESOLVED",
-          "affectedArtifacts": [
-            "C:/kafka_2.13-4.0.0/config/kraft/server.properties"
-          ],
-          "description": "Kafka producer in naas application logged Connection to node... could not be established. Broker may not be available. despite Kafka appearing to start.",
-          "rootCauseAnalysis": {
-            "type": "Incomplete Kafka Broker Configuration",
-            "summary": "The server.properties file for the Kafka broker was missing essential operational properties (e.g., num.network.threads, socket.send.buffer.bytes, offsets.topic.replication.factor) required for the broker to properly handle client connections and message flow, even though its KRaft controller role was active."
-          },
-          "resolution": {
-            "immediateFix": "Added missing standard Kafka broker configuration properties to server.properties to enable full message production and consumption functionality.",
-            "preventionStrategy": "When setting up Kafka (especially KRaft), ensure both controller-specific and traditional broker-specific properties are correctly configured. Verify connectivity with manual kafka-console-producer and kafka-console-consumer tests before integrating applications."
-          }
-        }
-      ]
+      "id": "PATTERN-005",
+      "title": "Environment vs. Configuration Blame",
+      "severity": "HIGH",
+      "description": "Debugging config when environment is the issue wastes time",
+      "whyTricky": "Error messages often mislead",
+      "prevention": ["Check filesystem and permissions first"],
+      "examples": ["BUILD-001"]
     }
-  },
+  ],
+  "keyExamples": [
     {
-      "category": "Agent Self-Correction/Process",
-      "pitfalls": [
-        {
-          "id": "AGENT-001",
-          "title": "Incomplete Type/Dataflow Audit Leads to Cascading Errors",
-          "date": "2025-07-10",
-          "severity": "CRITICAL",
-          "status": "ACTIVE",
-          "affectedArtifacts": ["All modules with DTOs or inter-service communication"],
-          "description": "Failure to perform a comprehensive type and dataflow audit before implementing changes, especially those involving generics or serialization, results in cascading compilation and runtime errors across multiple components.",
-          "rootCauseAnalysis": {
-            "type": "Process Flaw / Insufficient Pre-computation",
-            "summary": "The agent failed to fully trace the implications of type changes (e.g., Avro to POJO) across all dependent code, including KafkaTemplate declarations, data transformations (Instant to long), and test files. This led to repeated build failures and debug loops."
-          },
-          "resolution": {
-            "immediateFix": "Implemented a rigorous self-audit process before code modification, explicitly mapping data types and transformations across the entire data flow.",
-            "preventionStrategy": "Before any type-related code modification, the agent MUST perform a full, explicit type and dataflow audit, documenting all affected components and ensuring forward and backward compatibility. This includes verifying serialization/deserialization mechanisms and updating all relevant configurations and tests."
-          }
-        },
-        {
-          "id": "AGENT-002",
-          "title": "Assumptions about External System Configuration/Behavior",
-          "date": "2025-07-10",
-          "severity": "CRITICAL",
-          "status": "ACTIVE",
-          "affectedArtifacts": ["Kafka, MongoDB, any external service"],
-          "description": "Assuming external systems are correctly configured or behave as expected without explicit, isolated verification leads to integration failures.",
-          "rootCauseAnalysis": {
-            "type": "Process Flaw / Lack of Isolated Verification",
-            "summary": "The agent assumed Kafka's Avro serialization would work without a Schema Registry, and that basic Kafka broker properties were sufficient, leading to runtime errors. This indicates a failure to isolate and verify external system dependencies independently."
-          },
-          "resolution": {
-            "immediateFix": "Prioritized isolated verification of external system components (e.g., Kafka console producer/consumer tests) before integrating with application code.",
-            "preventionStrategy": "The agent MUST perform isolated, explicit verification of all external system dependencies and their configurations. Do not assume default behaviors or rely solely on application-level error messages for external system issues."
-          }
-        },
-        {
-          "id": "AGENT-003",
-          "title": "Naive Data Handling for Complex Formats",
-          "date": "2025-07-10",
-          "severity": "CRITICAL",
-          "status": "ACTIVE",
-          "affectedArtifacts": ["ETL parsing components"],
-          "description": "Using overly simplistic methods for parsing or transforming complex data formats (e.g., SQL INSERT statements, CSVs) leads to data integrity issues and runtime errors.",
-          "rootCauseAnalysis": {
-            "type": "Technical Debt / Underestimation of Complexity",
-            "summary": "The agent initially used simple string splitting for SQL INSERT statements, failing to account for nuances like quoted commas or NULL values. This resulted in malformed data and parsing errors."
-          },
-          "resolution": {
-            "immediateFix": "Replaced naive parsing logic with robust, format-aware methods (e.g., regex for SQL, dedicated CSV parsers).",
-            "preventionStrategy": "For any data parsing or transformation task involving structured or semi-structured data, the agent MUST identify and utilize dedicated parsing libraries or robust, battle-tested regex patterns that account for all format specificities (quoting, escaping, nulls, etc.). Avoid ad-hoc string manipulation for complex data."
-          }
-        }
-      ]
+      "id": "BUILD-001",
+      "description": "Blamed POM for a missing directory",
+      "lesson": "Check environment first"
+    },
+    {
+      "id": "ETL-002",
+      "description": "split(',') on SQL INSERT failed on quoted commas",
+      "lesson": "Use proper parsers"
+    },
+    {
+      "id": "KAFKA-001/002",
+      "description": "Default Kafka serialization broke DTOs",
+      "lesson": "Configure serializers explicitly"
+    },
+    {
+      "id": "INFRA-001",
+      "description": "Kafka seemed to start but wasn’t fully configured",
+      "lesson": "Test externally first"
+    },
+    {
+      "id": "ETL-003",
+      "description": "Changed Quant DTO without auditing, broke everything",
+      "lesson": "Full audit before type changes"
+    },
+    {
+      "id": "AGENT-002",
+      "description": "Attempted to fix Spring Test Context issues by modifying main application Kafka producer to use StringSerializer and introducing conflicting test configurations, leading to a destructive trial-and-error loop and breaking core functionality.",
+      "lesson": "Understand Spring Test Context, use programmatic test-only consumers, and ensure unified configuration. Adhere to PROHIBIT-003, PROHIBIT-004, and PROHIBIT-006."
     }
-  ]
+  ],
+  "agentBestPractices": [
+    {
+      "id": "BP-001",
+      "practice": "Start with the Environment",
+      "details": "Check files, permissions, and processes before configs"
     },
     {
-      "category": "Kafka/Serialization",
-      "pitfalls": [
-        {
-          "id": "KAFKA-001",
-          "title": "Kafka Consumer Deserialization Mismatch",
-          "date": "2025-07-10",
-          "severity": "CRITICAL",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["orchestrator/src/main/resources/application.yml", "orchestrator/src/main/java/com/grace/recon/orchestrator/kafka/UnifiedQuantConsumer.java"],
-          "description": "Kafka consumer failed with ClassCastException (String to DTO) because it was not configured to use a JSON deserializer for the value.",
-          "rootCauseAnalysis": {
-            "type": "Configuration Error",
-            "summary": "Spring Kafka's consumer properties were missing explicit key-deserializer and value-deserializer settings, leading to default String deserialization when a DTO was expected."
-          },
-          "resolution": {
-            "immediateFix": "Added 'key-deserializer: org.apache.kafka.common.serialization.StringDeserializer' and 'value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer' along with 'spring.json.value.default.type: com.grace.recon.common.dto.Quant' to application.yml.",
-            "preventionStrategy": "Always explicitly configure Kafka consumer deserializers when consuming complex objects. Verify with console consumer if messages are correctly formatted."
-          }
-        },
-        {
-          "id": "KAFKA-002",
-          "title": "Kafka Producer Serialization Mismatch",
-          "date": "2025-07-10",
-          "severity": "CRITICAL",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["orchestrator/src/main/resources/application.yml", "orchestrator/src/main/java/com/grace/recon/orchestrator/test/TestDataProducer.java"],
-          "description": "Kafka producer failed with SerializationException (DTO to String) because it was configured to use a StringSerializer for the value when a DTO was being sent.",
-          "rootCauseAnalysis": {
-            "type": "Configuration Error",
-            "summary": "Spring Kafka's producer properties were missing explicit key-serializer and value-serializer settings, leading to default String serialization when a DTO was expected."
-          },
-          "resolution": {
-            "immediateFix": "Added 'key-serializer: org.apache.kafka.common.serialization.StringSerializer' and 'value-serializer: org.springframework.kafka.support.serializer.JsonSerializer' to application.yml.",
-            "preventionStrategy": "Always explicitly configure Kafka producer serializers when producing complex objects. Verify with console consumer if messages are correctly formatted."
-          }
-        }
-      ]
+      "id": "BP-002",
+      "practice": "Read Version-Specific Docs",
+      "details": "Understand tool behavior for the exact version in use"
     },
     {
-      "category": "Application Configuration",
-      "pitfalls": [
-        {
-          "id": "APP-006",
-          "title": "Missing ObjectMapper Bean Definition",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["orchestrator/src/main/java/com/grace/recon/orchestrator/test/TestDataProducer.java", "orchestrator/src/main/java/com/grace/recon/orchestrator/config/OrchestratorConfig.java"],
-          "description": "Spring application failed to start due to UnsatisfiedDependencyException for ObjectMapper bean required by TestDataProducer.",
-          "rootCauseAnalysis": {
-            "type": "Missing Bean Definition",
-            "summary": "While Jackson is typically auto-configured by Spring Boot, in this specific context, an explicit @Bean definition for ObjectMapper was required to satisfy the TestDataProducer's dependency."
-          },
-          "resolution": {
-            "immediateFix": "Added a @Bean definition for ObjectMapper in OrchestratorConfig.java.",
-            "preventionStrategy": "When encountering UnsatisfiedDependencyException for common utility beans, consider explicitly defining them as @Bean in a configuration class."
-          }
-        },
-        {
-          "id": "APP-007",
-          "title": "Logback Version Incompatibility",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["orchestrator/pom.xml"],
-          "description": "Application startup failed with NoClassDefFoundError and NoSuchFieldError related to Logback classes, indicating a version mismatch.",
-          "rootCauseAnalysis": {
-            "type": "Transitive Dependency Conflict",
-            "summary": "Different versions of Logback were being pulled in by various dependencies, leading to incompatible class definitions at runtime."
-          },
-          "resolution": {
-            "immediateFix": "Explicitly defined consistent logback-classic and logback-core versions (1.4.14) in orchestrator/pom.xml.",
-            "preventionStrategy": "When encountering logging-related NoClassDefFoundError or NoSuchFieldError, investigate transitive dependencies and enforce consistent versions or exclusions."
-          }
-        }
-      ]
+      "id": "BP-003",
+      "practice": "Audit Before Changing Types",
+      "details": "Map every dependency and test compatibility"
     },
     {
-      "category": "Test Data Management",
-      "pitfalls": [
-        {
-          "id": "TEST-001",
-          "title": "Invalid JSON Format for Internal Data Producer",
-          "date": "2025-07-10",
-          "severity": "HIGH",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["orchestrator/src/main/resources/testdata.json", "orchestrator/src/main/java/com/grace/recon/orchestrator/test/TestDataProducer.java"],
-          "description": "TestDataProducer failed to read testdata.json with JsonParseException ('Unrecognized token') because the file contained key:value pairs instead of a valid JSON array of objects.",
-          "rootCauseAnalysis": {
-            "type": "Incorrect Data Format",
-            "summary": "The testdata.json file was inadvertently formatted for Kafka console producer input (key:value per line) instead of a standard JSON array of objects expected by ObjectMapper."
-          },
-          "resolution": {
-            "immediateFix": "Reverted testdata.json to its correct format: a JSON array containing Quant objects.",
-            "preventionStrategy": "Ensure internal data producers expect and consume data in a standard, valid JSON format (e.g., JSON array of objects) rather than a specialized console tool format."
-          }
-        },
-        {
-          "id": "TEST-002",
-          "title": "Unrecognized JSON Fields in Test Data",
-          "date": "2025-07-10",
-          "severity": "MEDIUM",
-          "status": "RESOLVED",
-          "affectedArtifacts": ["orchestrator/src/main/resources/testdata.json", "com.grace.recon.common.dto.Quant"],
-          "description": "TestDataProducer failed with UnrecognizedPropertyException ('_comment') when reading testdata.json.",
-          "rootCauseAnalysis": {
-            "type": "Schema Mismatch",
-            "summary": "The testdata.json contained '_comment' fields which are not part of the Quant DTO, causing Jackson to fail during deserialization."
-          },
-          "resolution": {
-            "immediateFix": "Removed '_comment' fields from testdata.json.",
-            "preventionStrategy": "Ensure test data JSON strictly adheres to the DTO schema. If comments are needed, use JSON-compatible commenting strategies or configure ObjectMapper to ignore unknown properties (though strictness is often preferred for test data)."
-          }
-        }
-      ]
+      "id": "BP-004",
+      "practice": "Use Robust Parsers",
+      "details": "No shortcuts on complex data—use libraries or regex"
+    },
+    {
+      "id": "BP-005",
+      "practice": "Test External Systems Alone",
+      "details": "Verify Kafka, DBs, etc., independently first"
+    },
+    {
+      "id": "BP-006",
+      "practice": "Escalate Fast with Structured Analysis",
+      "details": "After two failed fixes, perform the following steps:\n- Generate a minimal reproducible example.\n- Validate the environment (files, permissions, processes).\n- Test external systems in isolation (e.g., using console tools).\n- Use dependency analysis tools (e.g., 'mvn dependency:tree') to identify root causes."
+    },
+    {
+      "id": "BP-007",
+      "practice": "Validate Configurations Proactively",
+      "details": "Check config files against runtime objects at startup to prevent errors (e.g., CP9.T3 rules validation)"
+    },
+    {
+      "id": "BP-008",
+      "practice": "Optimize Performance with Caching",
+      "details": "Cache expensive operations (e.g., reflection lookups) for efficiency (e.g., CP9.T3 fieldCache)"
+    },
+    {
+      "id": "BP-009",
+      "practice": "Adopt a Defensive Mindset",
+      "details": "Always assume that data, environment, and systems may have hidden issues. Proactively validate assumptions, consider edge cases, and map dependencies before making changes."
     }
   ]
 }

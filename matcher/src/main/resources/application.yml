@@ -1,0 +1,13 @@
+spring:
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      acks: all
+      retries: 5
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topic:
+      matching-output: Matching_Output_Topic
+      escalation: Escalation_Topic
+      recon-metadata: Recon_Metadata_Topic
+      matcher-dlq: Maas_DLQ_Topic

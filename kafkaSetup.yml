@@ -1,138 +1,223 @@
-# LLM-Readable Kafka Setup Manifest for Reconciliation Engine PoC
-# This document chronicles the setup of the local Kafka broker, including
-# architectural decisions, configuration, and a step-by-step log of the
-# diagnostic and resolution process.
-
-# ------------------------------------------------------------------------------
-# 1. Executive Summary
-# ------------------------------------------------------------------------------
-setup_summary:
-  milestone_id: "INFRA.T2"
-  milestone_name: "Set up Local Kafka Broker (KRaft Mode)" #
-  objective: "To install and configure a local Kafka broker running in KRaft mode, create all necessary topics for the PoC, and verify its functionality." #
-  outcome: "SUCCESS"
-  final_status: "A single-node Kafka broker is running in KRaft mode with all required application topics created and ready for use."
-  environment:
-    os: "Windows"
-    kafka_version: "4.0.0"
-
-# ------------------------------------------------------------------------------
-# 2. Architectural & Strategic Decisions
-# ------------------------------------------------------------------------------
-architecture_and_strategy:
-  - decision: "Use KRaft (ZooKeeper-less) mode."
-    rationale: "KRaft simplifies the setup by removing the ZooKeeper dependency, which is a modern Kafka best practice and reduces operational overhead for a local PoC." #
-  - decision: "Implement a single-node cluster."
-    rationale: "A single node acting as both broker and controller is sufficient for local development and adheres to the project's 'sun_do_more_with_less' principle by avoiding unnecessary complexity." #
-  - decision: "Create a new, isolated configuration from scratch."
-    rationale: "Instead of modifying default configuration files, a new 'server.properties' was created in a dedicated 'config/kraft' directory. This provides a clean, minimal, and non-conflicting environment specific to the PoC, ensuring no interference with other Kafka installations."
-
-# ------------------------------------------------------------------------------
-# 3. Final Configuration Artifacts
-# ------------------------------------------------------------------------------
-final_configuration:
-  cluster_id: "LBtm32asR12btLEOM2fGxA"
-  configuration_file_path: "C:/kafka_2.13-4.0.0/config/kraft/server.properties"
-  log_directory: "C:/kafka_2.13-4.0.0/kraft-storage"
-
-  server_properties: |
-    # Roles: run as both a broker and a controller
-    process.roles=broker,controller
-    # Node ID: A unique identifier for this node
-    node.id=1
-    # Controller Quorum Voters: The list of nodes that are eligible to be controllers
-    controller.quorum.voters=1@localhost:9093
-    # Listeners: The network interfaces for clients (PLAINTEXT) and the controller (CONTROLLER)
-    listeners=PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
-    # Advertised Listeners: The listener that clients will be told to connect to
-    advertised.listeners=PLAINTEXT://localhost:9092
-    # Identifies which listener is used for controller communication. This was the missing property.
-    controller.listener.names=CONTROLLER
-    # Maps listener names to security protocols.
-    listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-    # The unique ID for the entire cluster that we just generated.
-    cluster.id=LBtm32asR12btLEOM2fGxA
-    # The directory where Kafka's log data will be stored.
-    log.dirs=C:/kafka_2.13-4.0.0/kraft-storage
-
-    # Essential Broker Configuration Properties (Added for full functionality)
-    num.network.threads=3
-    num.io.threads=8
-    socket.send.buffer.bytes=102400
-    socket.receive.buffer.bytes=102400
-    socket.request.max.bytes=104857600
-    log.retention.hours=168
-    log.segment.bytes=1073741824
-    log.retention.check.interval.ms=300000
-    offsets.topic.replication.factor=1
-    transaction.state.log.replication.factor=1
-    transaction.state.log.min.isr=1
-    log.cleaner.enable=true
-    log.cleaner.threads=1
-    log.cleanup.policy=delete
-    auto.create.topics.enable=true
-    num.partitions=1
-    default.replication.factor=1
-    min.insync.replicas=1
-    group.initial.rebalance.delay.ms=0
-
-  created_topics:
-    - "UnifiedDTOs_Input"       # For NaaS -> Orchestrator communication.
-    - "Matching_Input_Topic"    # For Orchestrator -> Matcher communication.
-    - "Matching_Output_Topic"   # For Matcher -> Orchestrator/Reporter communication.
-    - "Escalation_Topic"        # For routing UREs to the Escalator service.
-    - "Recon_Metadata_Topic"    # For Matcher -> Reporter communication.
-    - "naas-validation-dlq"     # DLQ for validation failures.
-    - "naas-etl-dlq"            # DLQ for ETL failures.
-    - "naas-normalization-dlq"  # DLQ for normalization failures.
-
-  sample_topic_data:
-    UnifiedDTOs_Input:
-      - {"transactionId":"TXN1743325878534044240","amount":1781.8,"currency":"356","transactionDate":1742724000000,"description":"MERCHANT85","sourceSystem":"VISA","transactionType":"AUTHORIZATION","authorizationCode":"AUTH055X","sourceReferenceId":"20250893821.0","accountId":null,"additionalMetadata":null}
-      - {"transactionId":"TXN1743325878534044240","amount":5531.98,"currency":"USD","transactionDate":1743345679000,"description":"LocalMarket","sourceSystem":"SWITCH","transactionType":"REFUND","authorizationCode":"AUTH0552","sourceReferenceId":"20250893821","accountId":null,"additionalMetadata":null}
-    naas-etl-dlq:
-      - "'66302','TXN1743325803617003707','GlobalRetail','MERCHANT15','5411','0.0',NULL,NULL,'775600','4532756278912346',NULL,'CAPTURE','AUTH6132','0','20250893707',NULL,'TERM7',NULL,NULL,'INVALID_AMOUNT',NULL,NULL,'2025-03-30 14:40:04','2025-03-30 14:40:04',NULL,'Amit Patel','Savings','123456','123ABC','0','2371.72','2025-03-23 10:00:00','A','BATCH001','12/25','Amit Patel','356','2025-03-24','654321','0','10','5','Transaction successful',NULL,'0',NULL,'0','0','N','SALE','2025-03-23','2.5','Online','REF208','10:00:00'"
-
-  topic_details:
-    UnifiedDTOs_Input:
-      description: "Primary input topic for the Orchestrator service, receiving normalized Quant DTOs from NaaS."
-      data_format: "JSON serialized Quant POJO (previously Avro)."
-      producer_service: "NaaS"
-      consumer_service: "Orchestrator"
-    naas-etl-dlq:
-      description: "Dead Letter Queue for records that fail during the ETL parsing stage within the NaaS service."
-      data_format: "Raw string representation of the failed record (e.g., malformed SQL INSERT statement)."
-      producer_service: "NaaS"
-      consumer_service: "N/A (manual inspection/reprocessing)"
-
-# ------------------------------------------------------------------------------
-# 4. Diagnostic and Setup Log (Nuanced Decision-Making)
-# ------------------------------------------------------------------------------
-diagnostic_log:
-  - step: 1
-    action: "Generate Cluster UUID for KRaft."
-    command: "windows\kafka-storage.bat random-uuid"
-    result: "Successfully generated UUID: LBtm32asR12btLEOM2fGxA"
-  - step: 2
-    action: "Attempt to format storage with an initial, overly simplified configuration."
-    nuance: "The first proposed configuration was intentionally minimal but proved to be missing properties required by this specific Kafka version."
-    result: |
-      Error: java.nio.file.NoSuchFileException: kraft\server.properties
-    decision: "The error was not with the configuration itself, but with the file path. The required 'kraft' subdirectory did not exist. The corrective action was to create the directory and move the file."
-  - step: 3
-    action: "Re-attempt to format storage after correcting the file path."
-    result: |
-      Error: java.lang.IllegalArgumentException: requirement failed: controller.listener.names must contain at least one value...
-    decision: "This error provided the key insight. The minimal configuration was insufficient. It required an explicitly defined 'controller.listener.names' property and a corresponding listener in 'listeners' and a 'listener.security.protocol.map'. The configuration was updated to meet this explicit requirement from the error message."
-  - step: 4
-    action: "Final attempt to format storage with the corrected configuration."
-    command: "..\..\bin\windows\kafka-storage.bat format -t LBtm32asR12btLEOM2fGxA -c server.properties"
-    result: "Success. Log message indicated 'Formatting metadata directory...'"
-  - step: 5
-    action: "Start the Kafka server."
-    command: "..\..\bin\windows\kafka-server-start.bat server.properties"
-    result: "Success. Log message indicated '[KafkaRaftServer nodeId=1] Kafka Server started'."
-  - step: 6
-    action: "Create all required application topics."
-    command: "C:\kafka_2.13-4.0.0\bin\windows\kafka-topics.bat --create ..."
-    result: "Success. All 5 core application topics were created successfully."
+{
+  "setup_summary": {
+    "milestone_id": "INFRA.T2",
+    "milestone_name": "Set up Local Kafka Broker (KRaft Mode)",
+    "objective": "To install and configure a local Kafka broker running in KRaft mode, create all necessary topics for the PoC, and verify its functionality.",
+    "outcome": "SUCCESS",
+    "final_status": "A single-node Kafka broker is running in KRaft mode with all required application topics created and ready for use.",
+    "environment": {
+      "os": "Windows",
+      "kafka_version": "4.0.0"
+    },
+    "last_updated": "2025-01-27",
+    "validation_status": "VERIFIED"
+  },
+  "architecture_and_strategy": [
+    {
+      "decision": "Use KRaft (ZooKeeper-less) mode.",
+      "rationale": "KRaft simplifies the setup by removing the ZooKeeper dependency, which is a modern Kafka best practice and reduces operational overhead for a local PoC."
+    },
+    {
+      "decision": "Implement a single-node cluster.",
+      "rationale": "A single node acting as both broker and controller is sufficient for local development and adheres to the project's 'sun_do_more_with_less' principle by avoiding unnecessary complexity."
+    },
+    {
+      "decision": "Create a new, isolated configuration from scratch.",
+      "rationale": "Instead of modifying default configuration files, a new 'server.properties' was created in a dedicated 'config/kraft' directory. This provides a clean, minimal, and non-conflicting environment specific to the PoC."
+    }
+  ],
+  "final_configuration": {
+    "cluster_id": "LBtm32asR12btLEOM2fGxA",
+    "configuration_file_path": "C:/kafka_2.13-4.0.0/config/kraft/server.properties",
+    "log_directory": "C:/kafka_2.13-4.0.0/kraft-storage",
+    "server_properties": "# Roles: run as both a broker and a controller\nprocess.roles=broker,controller\nnode.id=1\ncontroller.quorum.voters=1@localhost:9093\nlisteners=PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093\nadvertised.listeners=PLAINTEXT://localhost:9092\ncontroller.listener.names=CONTROLLER\nlistener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT\ncluster.id=LBtm32asR12btLEOM2fGxA\nlog.dirs=C:/kafka_2.13-4.0.0/kraft-storage\nnum.network.threads=3\nnum.io.threads=8\nsocket.send.buffer.bytes=102400\nsocket.receive.buffer.bytes=102400\nsocket.request.max.bytes=104857600\nlog.retention.hours=168\nlog.segment.bytes=1073741824\nlog.retention.check.interval.ms=300000\noffsets.topic.replication.factor=1\ntransaction.state.log.replication.factor=1\ntransaction.state.log.min.isr=1"
+  },
+  "created_topics": [
+    "UnifiedDTOs_Input",
+    "Matching_Input_Topic",
+    "Matching_Output_Topic",
+    "Escalation_Topic",
+    "Recon_Metadata_Topic",
+    "naas-validation-dlq",
+    "naas-etl-dlq",
+    "naas-normalization-dlq",
+    "test-topic"
+  ],
+  "sample_topic_data": {
+    "UnifiedDTOs_Input": [
+      {
+        "transactionId": "TXN1743325878534044240",
+        "amount": 1781.8,
+        "currency": "356",
+        "transactionDate": 1742724000000,
+        "description": "MERCHANT85",
+        "sourceSystem": "VISA",
+        "transactionType": "AUTHORIZATION",
+        "authorizationCode": "AUTH055X",
+        "sourceReferenceId": "20250893821.0",
+        "accountId": null,
+        "additionalMetadata": null
+      },
+      {
+        "transactionId": "TXN1743325878534044240",
+        "amount": 5531.98,
+        "currency": "USD",
+        "transactionDate": 1743345679000,
+        "description": "LocalMarket",
+        "sourceSystem": "SWITCH",
+        "transactionType": "REFUND",
+        "authorizationCode": "AUTH0552",
+        "sourceReferenceId": "20250893821",
+        "accountId": null,
+        "additionalMetadata": null
+      }
+    ],
+    "naas-etl-dlq": [
+      "'66302','TXN1743325803617003707','GlobalRetail','MERCHANT15','5411','0.0',NULL,NULL,'775600','4532756278912346',NULL,'CAPTURE','AUTH6132','0','20250893707',NULL,'TERM7',NULL,NULL,'INVALID_AMOUNT',NULL,NULL,'2025-03-30 14:40:04','2025-03-30 14:40:04',NULL,'Amit Patel','Savings','123456','123ABC','0','2371.72','2025-03-23 10:00:00','A','BATCH001','12/25','Amit Patel','356','2025-03-24','654321','0','10','5','Transaction successful',NULL,'0',NULL,'0','0','N','SALE','2025-03-23','2.5','Online','REF208','10:00:00'"
+    ]
+  },
+  "topic_details": {
+    "UnifiedDTOs_Input": {
+      "description": "Primary input topic for the Orchestrator service, receiving normalized Quant DTOs from NaaS.",
+      "data_format": "JSON serialized Quant POJO",
+      "producer_service": "NaaS",
+      "consumer_service": "Orchestrator"
+    },
+    "naas-etl-dlq": {
+      "description": "Dead Letter Queue for records that fail during the ETL parsing stage within the NaaS service.",
+      "data_format": "Raw string representation of the failed record (e.g., malformed SQL INSERT statement).",
+      "producer_service": "NaaS",
+      "consumer_service": "N/A (manual inspection/reprocessing)"
+    }
+  },
+  "diagnostic_log": [
+    {
+      "step": 1,
+      "action": "Generate Cluster UUID for KRaft.",
+      "command": "windows\\kafka-storage.bat random-uuid",
+      "result": "Successfully generated UUID: LBtm32asR12btLEOM2fGxA"
+    },
+    {
+      "step": 2,
+      "action": "Attempt to format storage with an initial, overly simplified configuration.",
+      "result": "Error: java.nio.file.NoSuchFileException: kraft\\server.properties",
+      "decision": "Create directory and move the file."
+    },
+    {
+      "step": 3,
+      "action": "Re-attempt to format storage after correcting the file path.",
+      "result": "Error: java.lang.IllegalArgumentException: requirement failed: controller.listener.names must contain at least one value...",
+      "decision": "Update configuration to explicitly define 'controller.listener.names' and other necessary properties."
+    },
+    {
+      "step": 4,
+      "action": "Start the Kafka server.",
+      "command": "..\\..\\bin\\windows\\kafka-server-start.bat server.properties",
+      "result": "Success. Log message indicated 'Kafka Server started'."
+    },
+    {
+      "step": 5,
+      "action": "List all Kafka topics to verify successful creation.",
+      "command": "kafka-topics.bat --list --bootstrap-server localhost:9092",
+      "result": "Topics: [Escalation_Topic, Matching_Input_Topic, Matching_Output_Topic, Recon_Metadata_Topic, UnifiedDTOs_Input, __consumer_offsets, naas-etl-dlq, naas-normalization-dlq, naas-validation-dlq, test-topic]"
+    },
+    {
+      "step": 6,
+      "action": "Consume data from UnifiedDTOs_Input topic to verify message consumption.",
+      "command": "kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic UnifiedDTOs_Input --from-beginning",
+      "result": "Successfully consumed data from UnifiedDTOs_Input topic."
+    },
+    {
+      "step": 7,
+      "action": "Consume data from naas-etl-dlq topic to check for any failed ETL records.",
+      "command": "kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic naas-etl-dlq --from-beginning",
+      "result": "No failed ETL records found."
+    }
+  ],
+  "log_file_details": {
+    "log_files": [
+      "controller.log.2025-06-21-07",
+      "controller.log.2025-06-21-06",
+      "controller.log.2025-06-21-11",
+      "controller.log.2025-06-21-21",
+      "controller.log.2025-06-21-18",
+      "controller.log.2025-06-21-19",
+      "controller.log.2025-06-19-17",
+      "controller.log.2025-06-20-12",
+      "controller.log.2025-06-19-08",
+      "stage-change.log.2025-06-19-05",
+      "stage-change.log.2025-07-10-04",
+      "controller.log.2025-07-10-00",
+      "controller.log.2025-06-19-05",
+      "server.log.2025-07-09-20",
+      "stage-change.log.2025-07-10-06",
+      "controller.log",
+      "stage-change.log.2025-06-19-12",
+      "server.log.2025-07-10-00",
+      "controller.log.2025-07-10-23"
+    ]
+  },
+  "atomic_jar_metadata": {
+    "core_broker_controller": [
+      {
+        "name": "kafka_2.13-4.0.0.jar",
+        "role": "Main entry point for the Kafka server process, contains broker and controller logic."
+      },
+      {
+        "name": "kafka-server-4.0.0.jar",
+        "role": "Implements network layer, request handlers, topic/partition management."
+      },
+      {
+        "name": "kafka-metadata-4.0.0.jar",
+        "role": "Manages cluster metadata (brokers, topics, partitions)."
+      },
+      {
+        "name": "kafka-group-coordinator-4.0.0.jar",
+        "role": "Implements consumer group protocol and partition assignment."
+      },
+      {
+        "name": "kafka-raft-4.0.0.jar",
+        "role": "Handles Raft consensus protocol in KRaft mode for controller quorum."
+      },
+      {
+        "name": "kafka-storage-4.0.0.jar",
+        "role": "Provides persistent log abstraction, reading/writing log entries."
+      },
+      {
+        "name": "kafka-transaction-coordinator-4.0.0.jar",
+        "role": "Manages transactions (init, commit, abort)."
+      }
+    ],
+    "client_apis": [
+      {
+        "name": "kafka-clients-4.0.0.jar",
+        "role": "Producer, consumer, admin client APIs; handles serialization, partitioning, compression."
+      }
+    ],
+    "streams_connect": [
+      {
+        "name": "kafka-streams-4.0.0.jar",
+        "role": "Stream processing DSL, topology building, state stores."
+      },
+      {
+        "name": "kafka-connect-api-4.0.0.jar",
+        "role": "Defines connector, task, transformation interfaces."
+      }
+    ],
+    "web_rest_networking": [
+      {
+        "name": "jetty-*.jar",
+        "role": "Embedded HTTP server for REST endpoints."
+      },
+      {
+        "name": "jersey-*.jar",
+        "role": "REST API implementation for Kafka Connect and other services."
+      }
+    ]
+  },
+  "quick_reference": {
+    "start_kafka": "bin\\windows\\kafka-server-start.bat config\\kraft\\server.properties",
+    "stop_kafka": "bin\\windows\\kafka-server-stop.bat",
+    "list_topics": "bin\\windows\\kafka-topics.bat --list --bootstrap-server localhost:9092"
+  }
+}

@@ -6,17 +6,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfig {
 
-    @Value("${kafka.bootstrap.servers:localhost:9092}")
-    private String kafkaBootstrapServers;
+  @Value("${kafka.bootstrap.servers:localhost:9092}")
+  private String kafkaBootstrapServers;
 
-    @Value("${common.buffer.capacity:10000}")
-    private int commonBufferCapacity;
+  @Value("${common.buffer.capacity:10000}")
+  private int commonBufferCapacity;
 
-    public String getKafkaBootstrapServers() {
-        return kafkaBootstrapServers;
-    }
+  public String getKafkaBootstrapServers() {
+    return kafkaBootstrapServers;
+  }
 
-    public int getCommonBufferCapacity() {
-        return commonBufferCapacity;
-    }
+  public int getCommonBufferCapacity() {
+    return commonBufferCapacity;
+  }
 }
