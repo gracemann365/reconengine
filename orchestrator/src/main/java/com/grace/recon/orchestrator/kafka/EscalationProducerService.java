@@ -1,60 +1,31 @@
 package com.grace.recon.orchestrator.kafka;
 
-import com.grace.recon.orchestrator.model.IncompleteQuant;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
+import com.grace.recon.common.dto.output.UreQuant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-@Service
 public class EscalationProducerService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EscalationProducerService.class);
 
-  private static final Logger logger = LoggerFactory.getLogger(EscalationProducerService.class);
-  private static final String ESCALATION_TOPIC = "Escalation_Topic";
+    @Value("${spring.kafka.topic.escalation}")
+    private String escalationTopic;
 
-  private final KafkaTemplate<String, IncompleteQuant> kafkaTemplate;
-  private final Counter quantsEscalatedCounter;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-  @Autowired
-  public EscalationProducerService(
-      KafkaTemplate<String, IncompleteQuant> kafkaTemplate, MeterRegistry meterRegistry) {
-    this.kafkaTemplate = kafkaTemplate;
-    this.quantsEscalatedCounter =
-        Counter.builder("orchestrator.quants.escalated")
-            .description("Number of Quants escalated due to timeout")
-            .register(meterRegistry);
-  }
-
-  public void escalateIncompleteQuant(IncompleteQuant incompleteQuant) {
-    if (incompleteQuant == null) {
-      logger.warn("Attempted to escalate a null IncompleteQuant.");
-      return;
+    public EscalationProducerService(KafkaTemplate<String, Object> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
     }
 
-    String key = incompleteQuant.getQuant().getTransactionId();
-
-    kafkaTemplate
-        .send(ESCALATION_TOPIC, key, incompleteQuant)
-        .whenComplete(
-            (result, ex) -> {
-              if (ex == null) {
-                quantsEscalatedCounter.increment();
-                logger.info(
-                    "Successfully escalated IncompleteQuant with transactionId {} to topic {}. Offset: {}",
-                    incompleteQuant.getQuant().getTransactionId(),
-                    ESCALATION_TOPIC,
-                    result.getRecordMetadata().offset());
-              } else {
-                logger.error(
-                    "Failed to escalate IncompleteQuant with transactionId {} to topic {}. Error: {}",
-                    incompleteQuant.getQuant().getTransactionId(),
-                    ESCALATION_TOPIC,
-                    ex.getMessage(),
-                    ex);
-              }
-            });
-  }
+    public void publishUreQuant(UreQuant ure) {
+        try {
+            String key = ure.getQuantPair().getHusband().getTransactionId();
+            kafkaTemplate.send(escalationTopic, key, ure);
+            LOGGER.warn("Published URE for transactionId {} to topic {}", key, escalationTopic);
+        } catch (Exception e) {
+            LOGGER.error("Failed to publish UreQuant to topic {}", escalationTopic, e);
+        }
+    }
 }

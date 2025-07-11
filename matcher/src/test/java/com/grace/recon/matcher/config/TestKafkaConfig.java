@@ -6,15 +6,17 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Configuration
+ @Profile("test") @TestPropertySource(locations = "classpath:application-test.yml")
 public class TestKafkaConfig {
 
-    @Bean
-    public KafkaConsumer<String, String> dlqConsumer(@Value("${spring.kafka.consumer.bootstrap-servers}") String bootstrapServers) {
+    @Bean(name = "testDlqConsumer")
+    public KafkaConsumer<String, String> testDlqConsumer( @Value("${spring.kafka.consumer.bootstrap-servers}") String bootstrapServers) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-dlq-consumer");

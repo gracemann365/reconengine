@@ -1,6 +1,40 @@
 {
   "pending_tasks": [
     {
+      "phase_id": "CRITICAL_ISSUES",
+      "phase_name": "System-Wide Rectification of Critical Failures",
+      "status": "COMPLETED",
+      "tasks": [
+        {
+          "task_id": "CI.T1",
+          "task_name": "Correct DLQ Misconfiguration in Matcher",
+          "status": "COMPLETED",
+          "type": "FIX",
+          "module": "matcher",
+          "description": "Correct the misconfigured DLQ topic name in the matcher's application.yml from 'Maas_DLQ_Topic' to 'Matcher_DLQ_Topic' to prevent data loss.",
+          "dependencies": []
+        },
+        {
+          "task_id": "CI.T2",
+          "task_name": "Consolidate UreQuant Data Models",
+          "status": "COMPLETED",
+          "type": "REFACTOR",
+          "module": "common",
+          "description": "Consolidate the UreQuant DTO by deleting the old version in 'common/src/main/java/com/grace/recon/common/dto/UreQuant.java' and refactoring the orchestrator to use the single, correct DTO from 'common/src/main/java/com/grace/recon/common/dto/output/UreQuant.java'.",
+          "dependencies": ["CI.T1"]
+        },
+        {
+          "task_id": "CI.T3",
+          "task_name": "Fix Orchestrator Publishing Logic",
+          "status": "COMPLETED",
+          "type": "FIX",
+          "module": "orchestrator",
+          "description": "Modify the orchestrator's BatchPreparationService to map its internal IncompleteQuant object to the correct, shared UreQuant DTO before publishing to the Escalation_Topic.",
+          "dependencies": ["CI.T2"]
+        }
+      ]
+    },
+    {
       "phase_id": "CP10",
       "phase_name": "Reporter Service Implementation",
       "status": "PENDING",
@@ -8,11 +42,56 @@
         {
           "task_id": "CP10.T1",
           "task_name": "Setup Reporter Module Structure",
-          "status": "PENDING",
+          "status": "COMPLETED",
           "type": "SETUP",
           "module": "reporter",
-          "description": "Create the reporter-service Maven module, a basic pom.xml with dependencies (Spring Boot, Kafka, common), and standard directory structure.",
+          "description": "Create the `reporter` Maven module. The pom.xml must include dependencies for `spring-boot-starter-web`, `kafka-streams`, `spring-kafka`, and the `common` module. Create the standard Java source and resource directories.",
           "dependencies": ["CP9.T7"]
+        },
+        {
+          "task_id": "CP10.T2",
+          "task_name": "Configure Kafka Streams Application",
+          "status": "PENDING",
+          "type": "CONFIGURATION",
+          "module": "reporter",
+          "description": "Configure the service as a Kafka Streams application. This involves: 1. Updating `application.yml` with the `spring.kafka.streams` properties, including a versioned `application-id` (`reporter-recon-meta-v1`) and the `state-dir`. 2. Creating a `KafkaStreamsConfig.java` file with the `@EnableKafkaStreams` annotation and a `@Bean` for the `JsonSerde<ReconMeta>` to ensure correct DTO serialization.",
+          "dependencies": ["CP10.T1"]
+        },
+        {
+          "task_id": "CP10.T3",
+          "task_name": "Implement Report Stream Processor",
+          "status": "PENDING",
+          "type": "IMPLEMENTATION",
+          "module": "reporter",
+          "description": "Create the `ReportStreamProcessor` component. This class will build the Kafka Streams topology by consuming from the `Recon_Metadata_Topic` and materializing the stream into a queryable `KTable` state store named `recon-meta-store`.",
+          "dependencies": ["CP10.T2"]
+        },
+        {
+          "task_id": "CP10.T4",
+          "task_name": "Implement Report Query Service",
+          "status": "PENDING",
+          "type": "IMPLEMENTATION",
+          "module": "reporter",
+          "description": "Create the `ReportQueryService` to enable Interactive Queries. This service will inject the `StreamsBuilderFactoryBean` to get the `KafkaStreams` instance and query the `recon-meta-store`. It must include a readiness check to ensure `kafkaStreams.state()` is `RUNNING` before attempting a query.",
+          "dependencies": ["CP10.T3"]
+        },
+        {
+          "task_id": "CP10.T5",
+          "task_name": "Expose Reporting REST Endpoint",
+          "status": "PENDING",
+          "type": "IMPLEMENTATION",
+          "module": "reporter",
+          "description": "Create a `ReportController` with a `@GetMapping(\"/api/reports/batch/{batchId}\")`. This controller will use the `ReportQueryService` to fetch data and must include robust error handling, returning appropriate HTTP status codes: 200 for success, 404 for `NoSuchElementException`, and 503 for `IllegalStateException` (if the stream is not ready).",
+          "dependencies": ["CP10.T4"]
+        },
+        {
+          "task_id": "CP10.T6",
+          "task_name": "End-to-End Module Verification",
+          "status": "PENDING",
+          "type": "VERIFICATION",
+          "module": "reporter",
+          "description": "Perform a simple, manual end-to-end test for the PoC. This involves: 1. Producing a sample `ReconMeta` JSON message to the `Recon_Metadata_Topic` using `kafka-console-producer`. 2. Querying the REST endpoint (e.g., `curl http://localhost:8083/api/reports/batch/{batchId}`) to verify the correct JSON report is returned.",
+          "dependencies": ["CP10.T5"]
         }
       ]
     }

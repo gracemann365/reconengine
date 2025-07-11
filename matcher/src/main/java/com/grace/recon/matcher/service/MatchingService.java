@@ -4,7 +4,7 @@ import com.grace.recon.common.dto.FuzzyMatchedQuant;
 import com.grace.recon.common.dto.MatchedQuant;
 import com.grace.recon.common.dto.Quant;
 import com.grace.recon.common.dto.QuantPair;
-import com.grace.recon.common.dto.UreQuant;
+import com.grace.recon.common.dto.output.UreQuant;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -154,7 +154,7 @@ public class MatchingService {
     LOGGER.info("Routing URE Quant for QuantPair: {}", quantPair.getHusband().getTransactionId());
     // Placeholder for URE routing logic
     // Create a UreQuant object with reason codes and add to URE output queue
-    ureQuantsOutputQueue.add(new UreQuant(quantPair, "UNRECONCILED", "NO_MATCH_FOUND", null));
+    ureQuantsOutputQueue.add(new UreQuant(quantPair, "UNRECONCILED", "NO_MATCH_FOUND", System.currentTimeMillis()));
   }
 
   public ConcurrentLinkedQueue<MatchedQuant> getMatchedQuantsOutputQueue() {

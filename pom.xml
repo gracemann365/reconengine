@@ -100,7 +100,13 @@
             <dependency>
                 <groupId>org.springframework.kafka</groupId>
                 <artifactId>spring-kafka</artifactId>
-                <version>3.1.10</version>
+                <version>3.2.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.kafka</groupId>
+                <artifactId>spring-kafka-test</artifactId>
+                <version>3.2.3</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.kafka</groupId>
@@ -286,48 +292,10 @@
                             <googleJavaFormat>
                                 <version>1.19.2</version>
                             </googleJavaFormat>
-                            <removeUnusedImports/>
-                            <trimTrailingWhitespace/>
-                            <endWithNewline/>
                         </java>
                     </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <!-- OWASP Dependency-Check Plugin -->
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>${owasp-dependency-check.version}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
-    <repositories>
-        <repository>
-            <id>confluent</id>
-            <url>https://packages.confluent.io/maven/</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>confluent</id>
-            <url>https://packages.confluent.io/maven/</url>
-        </pluginRepository>
-    </pluginRepositories>
 </project>

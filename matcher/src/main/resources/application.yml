@@ -1,12 +1,17 @@
 spring:
   kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: matcher-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     producer:
       bootstrap-servers: localhost:9092
-      acks: all
-      retries: 5
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     topic:
+      matching-input: Matching_Input_Topic
       matching-output: Matching_Output_Topic
       escalation: Escalation_Topic
       recon-metadata: Recon_Metadata_Topic

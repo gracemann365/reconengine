@@ -1,6 +1,6 @@
 {
-  "version": "1.1",
-  "lastUpdated": "2025-07-12T10:00:00Z",
+  "version": "1.3",
+  "lastUpdated": "2025-07-12T17:30:00Z",
   "agentProhibitions": [
     {
       "id": "PROHIBIT-001",
@@ -49,6 +49,18 @@
       "rule": "NEVER attempt to fix test-specific dependency issues by modifying main application code or introducing conflicting test configurations",
       "reason": "Leads to a destructive trial-and-error loop, breaks core application functionality, and creates BeanDefinitionOverrideException",
       "action": "Understand Spring Test Context, use programmatic test-only consumers, and ensure unified configuration"
+    },
+    {
+      "id": "PROHIBIT-009",
+      "rule": "NEVER attempt surgical fixes on deeply intertwined compilation errors after initial failures",
+      "reason": "Leads to 'whack-a-mole' debugging, creates new errors, and prolongs resolution (e.g., AGENT-003)",
+      "action": "Perform holistic file replacements or re-scaffolding when multiple, related errors persist"
+    },
+    {
+      "id": "PROHIBIT-010",
+      "rule": "NEVER assume successful compilation implies successful runtime",
+      "reason": "Compilation only checks syntax and type compatibility; runtime errors (e.g., Spring context issues, misconfigurations) can still prevent application startup (e.g., AGENT-004)",
+      "action": "Always perform runtime verification (e.g., attempt application startup, run integration tests) after critical changes, especially configuration-related ones."
     }
   ],
   "criticalErrorPatterns": [
@@ -99,6 +111,30 @@
       "whyTricky": "Error messages often mislead",
       "prevention": ["Check filesystem and permissions first"],
       "examples": ["BUILD-001"]
+    },
+    {
+      "id": "PATTERN-006",
+      "title": "Iterative Surgical Fixes on Systemic Issues",
+      "severity": "CRITICAL",
+      "description": "Attempting small, isolated fixes on deeply interconnected architectural flaws",
+      "whyTricky": "Fixing one symptom often creates new, related symptoms, leading to a prolonged and frustrating debugging cycle.",
+      "prevention": [
+        "When multiple related compilation errors appear, especially after DTO or core logic changes, immediately switch to a holistic analysis.",
+        "Consider full file replacements or re-scaffolding for affected modules to ensure consistency."
+      ],
+      "examples": ["AGENT-003"]
+    },
+    {
+      "id": "PATTERN-007",
+      "title": "Compilation Success, Runtime Failure",
+      "severity": "CRITICAL",
+      "description": "A successful build (compilation) does not guarantee a successful application startup or runtime. Configuration errors, missing beans, or environment issues can still cause failures.",
+      "whyTricky": "The build process provides a false sense of security, as it only validates code syntax and dependencies, not runtime behavior.",
+      "prevention": [
+        "Always include runtime verification (e.g., attempting application startup, running integration tests) as part of the verification process after significant changes, especially those affecting configuration or Spring context.",
+        "Prioritize analysis of application logs for startup errors."
+      ],
+      "examples": ["AGENT-004"]
     }
   ],
   "keyExamples": [
@@ -131,6 +167,16 @@
       "id": "AGENT-002",
       "description": "Attempted to fix Spring Test Context issues by modifying main application Kafka producer to use StringSerializer and introducing conflicting test configurations, leading to a destructive trial-and-error loop and breaking core functionality.",
       "lesson": "Understand Spring Test Context, use programmatic test-only consumers, and ensure unified configuration. Adhere to PROHIBIT-003, PROHIBIT-004, and PROHIBIT-006."
+    },
+    {
+      "id": "AGENT-003",
+      "description": "Persisted with surgical fixes (imports, method calls) on orchestrator module after multiple compilation failures, leading to a prolonged debugging cycle and new errors (e.g., TimedQuant missing, QuantPair type mismatch). This was a direct violation of PROHIBIT-006.",
+      "lesson": "When facing multiple, interconnected compilation errors, especially after core DTO or logic changes, a holistic file replacement or re-scaffolding is more efficient than iterative surgical fixes. Trust the user's guidance for complete solutions."
+    },
+    {
+      "id": "AGENT-004",
+      "description": "Failed to identify critical Spring BeanDefinitionOverrideException during initial 'system-wide sweep' because the sweep focused only on compilation success (mvn clean install -DskipTests) and did not include runtime verification or log analysis.",
+      "lesson": "Compilation success does not guarantee runtime success. Always include runtime verification (e.g., application startup, integration tests, log analysis) in comprehensive sweeps, especially after configuration changes."
     }
   ],
   "agentBestPractices": [
@@ -178,6 +224,16 @@
       "id": "BP-009",
       "practice": "Adopt a Defensive Mindset",
       "details": "Always assume that data, environment, and systems may have hidden issues. Proactively validate assumptions, consider edge cases, and map dependencies before making changes."
+    },
+    {
+      "id": "BP-010",
+      "practice": "Prioritize Holistic Solutions for Systemic Issues",
+      "details": "When facing multiple, interconnected compilation errors, especially after core DTO or logic changes, prioritize holistic file replacements or re-scaffolding over iterative surgical fixes. This ensures consistency and accelerates resolution."
+    },
+    {
+      "id": "BP-011",
+      "practice": "Comprehensive Verification (Build + Runtime)",
+      "details": "Always include both build-time (compilation, packaging) and runtime (application startup, integration tests, log analysis) verification in any comprehensive system sweep or after critical changes, especially those affecting configuration or Spring context. Compilation success is not sufficient."
     }
   ]
 }
