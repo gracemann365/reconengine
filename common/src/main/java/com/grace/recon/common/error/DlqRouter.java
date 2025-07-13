@@ -33,8 +33,6 @@ public class DlqRouter {
     // 1. Constructing a DLQ record (e.g., Avro schema for DLQ messages)
     // 2. Publishing to a Kafka DLQ topic (e.g., using KafkaTemplate)
     // 3. Potentially adding headers with error details, timestamp, etc.
-    System.out.println(
-        "Simulating DLQ routing for message with key: " + messageKey + ", error: " + errorMessage);
   }
 
   /**

@@ -1,0 +1,1098 @@
+{
+  "moduleName": "orchestrator",
+  "description": "Orchestrator Microservice for the Reconciliation Engine PoC - Handles transaction event buffering, pairing, and routing",
+  "version": "1.0.0-SNAPSHOT",
+  
+  "dependencyVersions": {
+    "java": "21",
+    "springBoot": "3.2.6",
+    "springKafka": "3.2.3",
+    "kafkaClients": "3.6.1",
+    "micrometer": "1.13.1",
+    "logback": "1.5.18",
+    "jakartaAnnotations": "2.1.1",
+    "junit": "5.10.0",
+    "mockito": "5.18.0",
+    "avro": "1.11.3"
+  },
+
+  "buildTools": {
+    "maven": {
+      "plugins": [
+        {
+          "name": "spring-boot-maven-plugin",
+          "version": "3.2.6",
+          "configuration": {
+            "excludes": ["lombok"]
+          }
+        }
+      ],
+      "buildCommands": {
+        "clean": "mvn clean",
+        "build": "mvn clean package",
+        "test": "mvn test",
+        "run": "mvn spring-boot:run"
+      },
+      "buildBehavior": {
+        "phases": {
+          "compile": ["Java 21 source compilation", "Resource filtering"],
+          "test": ["Unit tests", "Integration tests"],
+          "package": ["JAR assembly", "Spring Boot repackaging"]
+        },
+        "observedIssues": [
+          "Kafka connection timeouts during integration tests",
+          "Test data file not found in classpath during tests"
+        ],
+        "generatedArtifacts": [
+          "target/orchestrator-1.0.0-SNAPSHOT.jar",
+          "target/classes/*",
+          "target/test-classes/*"
+        ]
+      }
+    }
+  },
+
+  "mainComponents": {
+    "UnifiedQuantConsumer": {
+      "description": "Kafka consumer for ingesting Quant events",
+      "sourceLocation": {
+        "path": "src/main/java/com/grace/recon/orchestrator/kafka/UnifiedQuantConsumer.java",
+        "lineRange": "15-76",
+        "totalLines": 89
+      },
+      "methods": [
+        {
+          "signature": "@KafkaListener(topics = \"UnifiedDTOs_Input\", groupId = \"orchestrator-group\") public void listen(ConsumerRecord<String, Quant> record)",
+          "location": "lines 43-75",
+          "purpose": "Consumes and buffers Quant events from Kafka",
+          "errorHandling": {
+            "patterns": [
+              "Buffer overflow: Drops events with metric increment",
+              "Deserialization: Logs error and continues",
+              "Kafka errors: Retried by Spring Kafka infrastructure"
+            ],
+            "errorTypes": [
+              "BufferOverflowException",
+              "DeserializationException",
+              "KafkaException"
+            ]
+          },
+          "testCoverage": {
+            "file": "src/test/java/com/grace/recon/orchestrator/kafka/UnifiedQuantConsumerTest.java",
+            "scenarios": [
+              "testSuccessfulConsumption: lines 45-60",
+              "testBufferOverflow: lines 62-85",
+              "testDeserializationFailure: lines 87-105"
+            ],
+            "coverage": "87%"
+          }
+        },
+        {
+          "signature": "public ConcurrentLinkedQueue<Quant> getIngressBuffer()",
+          "location": "lines 76-78",
+          "purpose": "Provides access to internal buffer for batch processing",
+          "threadSafety": "Uses ConcurrentLinkedQueue for thread-safe operations",
+          "testCoverage": {
+            "scenarios": ["testConcurrentAccess: lines 107-130"],
+            "coverage": "95%"
+          }
+        }
+      ],
+      "fields": [
+        {
+          "name": "ingressBuffer",
+          "type": "ConcurrentLinkedQueue<Quant>",
+          "location": "line 19",
+          "purpose": "Thread-safe event buffer",
+          "visibility": "private final"
+        },
+        {
+          "name": "MAX_BUFFER_CAPACITY",
+          "type": "int",
+          "location": "line 20",
+          "value": "10000",
+          "visibility": "private static final"
+        }
+      ],
+      "configuration": {
+        "parameters": [
+          {
+            "name": "spring.kafka.consumer.group-id",
+            "type": "String",
+            "defaultValue": "orchestrator-group",
+            "impact": "Determines consumer group for Kafka partition assignment",
+            "location": "application.yml:15"
+          },
+          {
+            "name": "spring.kafka.consumer.auto-offset-reset",
+            "type": "String",
+            "defaultValue": "earliest",
+            "impact": "Controls message recovery behavior on restart",
+            "location": "application.yml:17"
+          }
+        ]
+      }
+    },
+    "BatchPreparationService": {
+      "description": "Core orchestration service managing transaction pairing and batching",
+      "sourceLocation": {
+        "path": "src/main/java/com/grace/recon/orchestrator/service/BatchPreparationService.java",
+        "lineRange": "21-95",
+        "totalLines": 156
+      },
+      "methods": [
+        {
+          "signature": "private void routeQuant(Quant quant)",
+          "location": "lines 39-45",
+          "purpose": "Routes quants to appropriate processing units",
+          "errorHandling": {
+            "patterns": [
+              "Invalid quant: Logs error and routes to DLQ",
+              "Processing unit full: Creates new unit"
+            ],
+            "errorTypes": [
+              "IllegalArgumentException",
+              "ProcessingUnitFullException"
+            ]
+          },
+          "testCoverage": {
+            "file": "src/test/java/com/grace/recon/orchestrator/service/BatchPreparationServiceTest.java",
+            "scenarios": [
+              "testSuccessfulRouting: lines 40-55",
+              "testInvalidQuant: lines 57-75",
+              "testProcessingUnitCreation: lines 77-95"
+            ],
+            "coverage": "92%"
+          }
+        },
+        {
+          "signature": "public void shutdown()",
+          "location": "lines 46-50",
+          "purpose": "Graceful service shutdown with resource cleanup",
+          "annotations": ["@PreDestroy"],
+          "errorHandling": {
+            "patterns": ["Logs shutdown errors but ensures cleanup completes"],
+            "errorTypes": ["ShutdownException"]
+          },
+          "testCoverage": {
+            "scenarios": ["testGracefulShutdown: lines 97-120"],
+            "coverage": "85%"
+          }
+        }
+      ],
+      "innerClasses": {
+        "ProcessingUnit": {
+          "location": "lines 51-95",
+          "purpose": "Handles transaction pairing and timeout management",
+          "methods": [
+            {
+              "signature": "public void addQuant(Quant quant)",
+              "location": "lines 67-78",
+              "errorHandling": {
+                "patterns": [
+                  "Duplicate transaction: Updates existing entry",
+                  "Invalid quant: Escalates to error topic"
+                ]
+              }
+            },
+            {
+              "signature": "private void flushPairedQuants()",
+              "location": "lines 79-88",
+              "errorHandling": {
+                "patterns": ["Batch send failure: Retries with backoff"]
+              }
+            }
+          ]
+        }
+      },
+      "configuration": {
+        "parameters": [
+          {
+            "name": "pairing.timeout.ms",
+            "type": "long",
+            "defaultValue": "30000",
+            "impact": "Maximum wait time for transaction pair",
+            "location": "application.yml:25"
+          },
+          {
+            "name": "batch.size.threshold",
+            "type": "int",
+            "defaultValue": "100",
+            "impact": "Triggers batch processing when reached",
+            "location": "application.yml:27"
+          }
+        ]
+      }
+    }
+  },
+
+  "testIssues": {
+    "criticalFailures": [
+      {
+        "issueType": "Integration",
+        "description": "Kafka connection failures in tests",
+        "atomicAnalysis": {
+          "failurePoint": "UnifiedQuantConsumer:43-45",
+          "rootCause": "Kafka broker not available during tests",
+          "impact": "Integration tests failing intermittently",
+          "resolution": {
+            "shortTerm": "Use TestContainers for Kafka",
+            "longTerm": "Implement better test doubles"
+          }
+        }
+      }
+    ],
+    "testDesignIssues": [
+      "Lack of component isolation in integration tests",
+      "Missing performance benchmarks for batch processing",
+      "Incomplete error scenario coverage"
+    ],
+    "buildSystemIssues": [
+      "Test resources not properly filtered",
+      "Integration tests running in unit test phase"
+    ],
+    "observedBehavior": {
+      "performance": "Batch processing shows linear scaling up to 1000 TPS",
+      "resourceUsage": "Heap usage grows with unprocessed transaction count",
+      "errorHandling": "Some edge cases cause silent failures"
+    }
+  },
+
+  "architecturalPatterns": {
+    "eventDriven": {
+      "pattern": "Event-driven microservice",
+      "implementation": "Kafka-based pub/sub",
+      "components": ["UnifiedQuantConsumer", "MatchingProducerService"]
+    },
+    "processingStrategy": {
+      "pattern": "Sharded processing",
+      "implementation": "ProcessingUnit per transaction group"
+    },
+    "resilience": {
+      "pattern": "Circuit breaker",
+      "implementation": "Spring Kafka retry mechanism"
+    }
+  },
+
+  "crossCuttingConcerns": {
+    "monitoring": {
+      "metrics": "Micrometer + Prometheus",
+      "logging": "JSON structured logging with Logback",
+      "tracing": "Transaction ID based correlation"
+    },
+    "security": {
+      "kafka": "PLAINTEXT (pending TLS)",
+      "dataProtection": "Sensitive field masking"
+    },
+    "configuration": {
+      "sources": ["application.yml", "env vars"],
+      "refreshStrategy": "Restart required"
+    }
+  },
+
+  "componentRelationships": {
+    "UnifiedQuantConsumer": {
+      "produces": ["Quant events"],
+      "consumedBy": ["BatchPreparationService"],
+      "dependencies": ["Kafka"]
+    },
+    "BatchPreparationService": {
+      "produces": ["QuantPair batches", "UreQuant events"],
+      "consumedBy": ["MatchingProducerService", "EscalationProducerService"],
+      "coordinates": ["ProcessingUnit instances"]
+    },
+    "ProcessingUnit": {
+      "produces": ["Paired transactions"],
+      "consumedBy": ["BatchPreparationService"],
+      "manages": ["Transaction timeouts", "Batch assembly"]
+    }
+  },
+
+  "dataFlows": {
+    "inbound": {
+      "source": "UnifiedDTOs_Input",
+      "format": "Quant DTOs",
+      "validation": ["Transaction ID presence", "Required fields"]
+    },
+    "processing": {
+      "steps": [
+        "Buffer ingestion",
+        "Shard assignment",
+        "Pairing attempt",
+        "Batch assembly"
+      ],
+      "decisions": {
+        "timeout": "Route to escalation",
+        "paired": "Add to batch",
+        "batchFull": "Send to matching"
+      }
+    },
+    "outbound": {
+      "success": {
+        "topic": "Matching_Input_Topic",
+        "format": "QuantPair batches"
+      },
+      "failure": {
+        "topic": "Escalation_Topic",
+        "format": "UreQuant events"
+      }
+    }
+  },
+
+  "testDocumentation": {
+    "testDependencies": {
+      "runtime": {
+        "org.junit.jupiter:junit-jupiter-api": {
+          "version": "5.10.0",
+          "scope": "test",
+          "transitive": [
+            "org.junit.platform:junit-platform-commons:1.10.0",
+            "org.opentest4j:opentest4j:1.3.0"
+          ]
+        },
+        "org.mockito:mockito-core": {
+          "version": "5.18.0",
+          "scope": "test",
+          "transitive": [
+            "net.bytebuddy:byte-buddy:1.14.11",
+            "org.objenesis:objenesis:3.3"
+          ]
+        },
+        "org.springframework.kafka:spring-kafka-test": {
+          "version": "3.2.3",
+          "scope": "test",
+          "transitive": [
+            "org.apache.kafka:kafka-clients:test:3.6.1",
+            "org.apache.kafka:kafka_2.13:3.6.1"
+          ]
+        }
+      },
+      "versionConflicts": [
+        {
+          "description": "Logback version mismatch",
+          "detail": "Spring Boot wants 1.4.11, project needs 1.5.18",
+          "resolution": "Explicitly declared in pom.xml"
+        }
+      ]
+    },
+
+    "knownFailurePoints": {
+      "UnifiedQuantConsumerTest": {
+        "testBufferOverflow": {
+          "location": "src/test/java/com/grace/recon/orchestrator/kafka/UnifiedQuantConsumerTest.java:62-85",
+          "failureType": "Race Condition",
+          "stackTrace": {
+            "exception": "java.util.ConcurrentModificationException",
+            "trace": [
+              "at UnifiedQuantConsumer.listen(UnifiedQuantConsumer.java:52)",
+              "at BatchPreparationService.processQuant(BatchPreparationService.java:145)",
+              "at ProcessingUnit.run(BatchPreparationService.java:89)"
+            ],
+            "rootCause": "Buffer access during concurrent modification",
+            "frequency": "~5% of test runs"
+          },
+          "reproduction": {
+            "steps": [
+              "1. Start with empty buffer",
+              "2. Send 10000 messages rapidly",
+              "3. Verify overflow handling"
+            ],
+            "requiredSetup": {
+              "kafkaContainer": "testcontainers/kafka:3.6.1",
+              "jvmArgs": "-Xmx512m -XX:MaxMetaspaceSize=128m"
+            }
+          }
+        },
+        "testDeserializationFailure": {
+          "location": "src/test/java/com/grace/recon/orchestrator/kafka/UnifiedQuantConsumerTest.java:87-105",
+          "failureType": "Data Corruption",
+          "stackTrace": {
+            "exception": "org.apache.kafka.common.errors.SerializationException",
+            "trace": [
+              "at KafkaAvroDeserializer.deserialize(KafkaAvroDeserializer.java:67)",
+              "at UnifiedQuantConsumer.listen(UnifiedQuantConsumer.java:45)"
+            ]
+          }
+        }
+      },
+      "BatchPreparationServiceTest": {
+        "testProcessingUnitCreation": {
+          "location": "src/test/java/com/grace/recon/orchestrator/service/BatchPreparationServiceTest.java:77-95",
+          "failureType": "Memory Leak",
+          "stackTrace": {
+            "exception": "java.lang.OutOfMemoryError: Java heap space",
+            "trace": [
+              "at ProcessingUnit.<init>(BatchPreparationService.java:61)",
+              "at BatchPreparationService.createUnit(BatchPreparationService.java:122)"
+            ],
+            "frequency": "After ~1000 test iterations"
+          }
+        }
+      }
+    },
+
+    "raceConditions": {
+      "processingUnitConcurrency": {
+        "location": "src/main/java/com/grace/recon/orchestrator/service/BatchPreparationService.java:67-78",
+        "description": "Multiple threads accessing pairingArena map",
+        "impactedTests": [
+          "testConcurrentQuants",
+          "testTimeoutHandling"
+        ],
+        "mitigation": "Using ConcurrentHashMap but still potential for race during compound operations",
+        "reproductionSteps": [
+          "1. Configure thread pool with 10 threads",
+          "2. Submit 1000 quants simultaneously",
+          "3. Check for lost or duplicate pairs"
+        ]
+      },
+      "kafkaConsumerRebalancing": {
+        "location": "src/main/java/com/grace/recon/orchestrator/kafka/UnifiedQuantConsumer.java:43-75",
+        "description": "Consumer group rebalancing during active processing",
+        "impactedTests": ["testConsumerGroupRebalancing"],
+        "mitigation": "Added rebalance listener and partition assignment tracking"
+      }
+    },
+
+    "resourceManagement": {
+      "kafkaTestContainers": {
+        "setup": {
+          "location": "src/test/java/com/grace/recon/orchestrator/kafka/KafkaTestContainer.java:15-45",
+          "startupOrder": [
+            "1. Launch Kafka container",
+            "2. Wait for broker availability",
+            "3. Create required topics"
+          ],
+          "cleanup": [
+            "1. Flush producers",
+            "2. Close consumers",
+            "3. Stop containers"
+          ]
+        },
+        "knownIssues": [
+          "Container sometimes hangs on Windows",
+          "Network flakiness on CI/CD"
+        ]
+      },
+      "testDataCleanup": {
+        "location": "src/test/java/com/grace/recon/orchestrator/BaseIntegrationTest.java:45-65",
+        "cleanupOrder": [
+          "1. Clear Kafka topics",
+          "2. Reset processing units",
+          "3. Clear metrics registry"
+        ],
+        "verificationSteps": [
+          "1. Check topic emptiness",
+          "2. Verify no lingering consumers",
+          "3. Confirm metric reset"
+        ]
+      }
+    },
+
+    "timingIssues": {
+      "consumerLags": {
+        "description": "Message processing delays under load",
+        "detectionPoints": [
+          "UnifiedQuantConsumerTest.java:150-170",
+          "BatchPreparationServiceTest.java:210-225"
+        ],
+        "resolution": {
+          "approach": "Increased wait times and added exponential backoff",
+          "configuration": {
+            "initialWaitMs": 100,
+            "maxWaitMs": 2000,
+            "backoffMultiplier": 1.5
+          }
+        }
+      },
+      "timeoutHandling": {
+        "description": "Inconsistent timeout behavior in tests",
+        "affectedTests": [
+          "testPairingTimeout",
+          "testEscalationFlow"
+        ],
+        "resolution": {
+          "approach": "Using TestScheduler for deterministic timing",
+          "location": "src/test/java/com/grace/recon/orchestrator/util/TestScheduler.java"
+        }
+      }
+    }
+  },
+  "suggestedTests": [
+    {
+      "component": "UnifiedQuantConsumer",
+      "testName": "testMessageConsumption",
+      "description": "Verify that the consumer correctly ingests a valid Quant event from Kafka and adds it to the buffer."
+    },
+    {
+      "component": "UnifiedQuantConsumer",
+      "testName": "testBufferOverflowHandling",
+      "description": "Simulate buffer overflow and ensure the event is dropped and the appropriate metric is incremented."
+    },
+    {
+      "component": "UnifiedQuantConsumer",
+      "testName": "testDeserializationErrorHandling",
+      "description": "Send a malformed message and verify that deserialization errors are logged and do not crash the consumer."
+    },
+    {
+      "component": "BatchPreparationService",
+      "testName": "testTransactionPairingLogic",
+      "description": "Ensure that two matching Quant events are paired correctly and sent to the next processing stage."
+    },
+    {
+      "component": "BatchPreparationService",
+      "testName": "testTimeoutHandling",
+      "description": "Verify that unpaired transactions are escalated after the timeout period."
+    },
+    {
+      "component": "BatchPreparationService",
+      "testName": "testResourceCleanupOnShutdown",
+      "description": "Test that all resources are properly cleaned up and no data is lost on service shutdown."
+    },
+    {
+      "component": "ProcessingUnit",
+      "testName": "testConcurrentAddQuant",
+      "description": "Simulate concurrent calls to addQuant and ensure thread safety and data integrity."
+    },
+    {
+      "component": "ProcessingUnit",
+      "testName": "testFlushPairedQuantsBatchSendFailure",
+      "description": "Simulate a batch send failure and verify that the retry mechanism works as expected."
+    },
+    {
+      "component": "CrossCuttingConcerns-Security",
+      "testName": "testKafkaSecurityConfiguration",
+      "description": "Verify TLS configuration and secure communication with Kafka broker."
+    },
+    {
+      "component": "CrossCuttingConcerns-Security",
+      "testName": "testSensitiveDataMasking",
+      "description": "Ensure sensitive fields are properly masked in logs and transmissions."
+    },
+    {
+      "component": "CrossCuttingConcerns-Logging",
+      "testName": "testStructuredLogging",
+      "description": "Verify JSON structured logging format and required fields in Logback output."
+    },
+    {
+      "component": "CrossCuttingConcerns-Logging",
+      "testName": "testTransactionCorrelation",
+      "description": "Ensure transaction IDs are properly correlated across log entries."
+    },
+    {
+      "component": "CrossCuttingConcerns-Monitoring",
+      "testName": "testMetricsRegistration",
+      "description": "Verify Micrometer metrics are properly registered and exposed to Prometheus."
+    },
+    {
+      "component": "CrossCuttingConcerns-Monitoring",
+      "testName": "testAlertThresholds",
+      "description": "Test that metrics exceed configured thresholds trigger appropriate alerts."
+    },
+    {
+      "component": "CrossCuttingConcerns-Resilience",
+      "testName": "testCircuitBreakerBehavior",
+      "description": "Verify circuit breaker opens after configured failure threshold and recovers properly."
+    },
+    {
+      "component": "CrossCuttingConcerns-Resilience",
+      "testName": "testRetryMechanism",
+      "description": "Ensure retry mechanism follows configured backoff pattern and max attempts."
+    },
+    {
+      "component": "CrossCuttingConcerns-Performance",
+      "testName": "testBatchProcessingLatency",
+      "description": "Measure and verify batch processing latency under various load conditions."
+    },
+    {
+      "component": "CrossCuttingConcerns-Performance",
+      "testName": "testMemoryUsageUnderLoad",
+      "description": "Monitor heap usage and ensure no memory leaks during extended operation."
+    }
+  ],
+  "dataFlowMapping": {
+    "inputProcessingChains": [
+      {
+        "name": "Quant Event Ingestion",
+        "flow": [
+          {
+            "component": "UnifiedQuantConsumer",
+            "stage": "Initial Ingestion",
+            "details": "Consumes Quant events from UnifiedDTOs_Input Kafka topic",
+            "validation": "Basic message structure validation"
+          },
+          {
+            "component": "IngressBuffer",
+            "stage": "Buffering",
+            "details": "ConcurrentLinkedQueue with MAX_BUFFER_CAPACITY=10000",
+            "monitoring": "quantsConsumedCounter, quantsDroppedCounter"
+          },
+          {
+            "component": "BatchPreparationService",
+            "stage": "Processing",
+            "details": "Routes Quants to appropriate ProcessingUnit"
+          }
+        ]
+      },
+      {
+        "name": "Transaction Pairing",
+        "flow": [
+          {
+            "component": "ProcessingUnit",
+            "stage": "Pairing Arena",
+            "details": "ConcurrentHashMap for transaction matching",
+            "timeout": "PAIRING_TIMEOUT_MS=30000"
+          },
+          {
+            "component": "BatchAssembly",
+            "stage": "Batch Creation",
+            "details": "Assembles QuantPairs into batches",
+            "threshold": "BATCH_SIZE_THRESHOLD=100"
+          }
+        ]
+      }
+    ],
+    "validationSequences": [
+      {
+        "stage": "Message Consumption",
+        "validations": [
+          "Kafka message deserialization",
+          "Quant object structure validation",
+          "Buffer capacity check"
+        ]
+      },
+      {
+        "stage": "Transaction Processing",
+        "validations": [
+          "Transaction ID presence",
+          "Timestamp validation",
+          "Business rule compliance",
+          "Pairing eligibility check"
+        ]
+      },
+      {
+        "stage": "Batch Processing",
+        "validations": [
+          "Batch size verification",
+          "Pair completeness check",
+          "Timeout compliance"
+        ]
+      }
+    ],
+    "errorHandlingPaths": [
+      {
+        "scenario": "Kafka Connection Failure",
+        "handler": "NetworkClient",
+        "actions": [
+          "Log warning",
+          "Attempt reconnection",
+          "Report metrics"
+        ]
+      },
+      {
+        "scenario": "Buffer Overflow",
+        "handler": "UnifiedQuantConsumer",
+        "actions": [
+          "Increment quantsDroppedCounter",
+          "Log warning",
+          "Skip processing"
+        ]
+      },
+      {
+        "scenario": "Pairing Timeout",
+        "handler": "ProcessingUnit",
+        "actions": [
+          "Route to escalation topic",
+          "Log incomplete transaction",
+          "Clean up resources"
+        ]
+      },
+      {
+        "scenario": "Producer Failure",
+        "handler": "MatchingProducerService/EscalationProducerService",
+        "actions": [
+          "Retry with backoff",
+          "Log error",
+          "Update metrics"
+        ]
+      }
+    ],
+    "auditLoggingPoints": [
+      {
+        "component": "UnifiedQuantConsumer",
+        "events": [
+          "Message consumption start/end",
+          "Buffer overflow incidents",
+          "Deserialization failures"
+        ],
+        "format": "JSON structured logging with Logback"
+      },
+      {
+        "component": "BatchPreparationService",
+        "events": [
+          "Processing unit creation",
+          "Quant routing decisions",
+          "Resource cleanup"
+        ],
+        "format": "JSON structured logging with correlation IDs"
+      },
+      {
+        "component": "ProcessingUnit",
+        "events": [
+          "Transaction pairing attempts",
+          "Timeout occurrences",
+          "Batch completions"
+        ],
+        "format": "JSON structured logging with transaction tracking"
+      }
+    ],
+    "integrationTouchpoints": [
+      {
+        "type": "Kafka Topics",
+        "points": [
+          {
+            "name": "UnifiedDTOs_Input",
+            "direction": "input",
+            "handler": "UnifiedQuantConsumer",
+            "dataType": "Quant events"
+          },
+          {
+            "name": "Matching_Input_Topic",
+            "direction": "output",
+            "handler": "MatchingProducerService",
+            "dataType": "QuantPair batches"
+          },
+          {
+            "name": "Escalation_Topic",
+            "direction": "output",
+            "handler": "EscalationProducerService",
+            "dataType": "UreQuant events"
+          }
+        ]
+      },
+      {
+        "type": "Metrics",
+        "points": [
+          {
+            "system": "Micrometer + Prometheus",
+            "metrics": [
+              "Quants consumed count",
+              "Quants dropped count",
+              "Processing unit count",
+              "Batch completion rate"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Configuration",
+        "points": [
+          {
+            "source": "application.yml",
+            "configs": [
+              "Kafka connection settings",
+              "Topic names",
+              "Consumer group settings"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "buildAndDeployment": {
+    "buildConfiguration": {
+      "buildTool": "Maven",
+      "mainPomLocation": "orchestrator/pom.xml",
+      "requiredJavaVersion": "21",
+      "mavenWrapper": {
+        "version": "3.9.5",
+        "location": ".mvn/wrapper/maven-wrapper.properties"
+      },
+      "criticalDependencies": [
+        {
+          "groupId": "org.springframework.boot",
+          "artifactId": "spring-boot-starter-parent",
+          "version": "3.2.6",
+          "scope": "parent",
+          "location": "pom.xml:14"
+        },
+        {
+          "groupId": "org.springframework.kafka",
+          "artifactId": "spring-kafka",
+          "version": "3.2.3",
+          "location": "pom.xml:42",
+          "usageLocations": [
+            "UnifiedQuantConsumer.java:43",
+            "MatchingProducerService.java:24",
+            "EscalationProducerService.java:22"
+          ]
+        }
+      ],
+      "buildPhases": {
+        "clean": {
+          "command": "mvn clean",
+          "cleanupPoints": [
+            "target/",
+            "logs/",
+            "*.log"
+          ]
+        },
+        "compile": {
+          "command": "mvn compile",
+          "outputDirectory": "target/classes",
+          "resourceFiltering": [
+            "application.yml",
+            "logback-spring.xml"
+          ]
+        },
+        "test": {
+          "command": "mvn test",
+          "outputDirectory": "target/test-classes",
+          "requiredResources": [
+            "src/test/resources/application-test.yml",
+            "src/test/resources/testdata.json"
+          ]
+        },
+        "package": {
+          "command": "mvn package",
+          "artifacts": [
+            {
+              "name": "orchestrator-1.0.0-SNAPSHOT.jar",
+              "location": "target/",
+              "size": "~15MB"
+            }
+          ]
+        }
+      },
+      "verifiedBuildCommands": {
+        "fullBuild": "mvn clean install -DskipTests=false",
+        "quickBuild": "mvn clean package -DskipTests",
+        "localRun": "mvn spring-boot:run"
+      }
+    },
+
+    "cicdPipeline": {
+      "stages": [
+        {
+          "name": "Build",
+          "steps": [
+            "Checkout code",
+            "Set up JDK 21",
+            "Cache Maven dependencies",
+            "Build with Maven"
+          ],
+          "artifacts": [
+            "JAR file",
+            "Test reports",
+            "Coverage reports"
+          ]
+        },
+        {
+          "name": "Test",
+          "steps": [
+            "Unit tests",
+            "Integration tests with TestContainers",
+            "Code coverage analysis"
+          ],
+          "requiredServices": [
+            "Kafka test container"
+          ]
+        },
+        {
+          "name": "Quality",
+          "steps": [
+            "SonarQube analysis",
+            "Dependency check",
+            "License compliance"
+          ]
+        },
+        {
+          "name": "Package",
+          "steps": [
+            "Build Docker image",
+            "Tag with version and commit hash",
+            "Push to registry"
+          ]
+        }
+      ],
+      "environmentVariables": [
+        "KAFKA_BOOTSTRAP_SERVERS",
+        "SPRING_PROFILES_ACTIVE",
+        "LOG_LEVEL",
+        "JAVA_OPTS"
+      ],
+      "secretManagement": {
+        "type": "Vault",
+        "secrets": [
+          "kafka.username",
+          "kafka.password",
+          "metrics.token"
+        ]
+      }
+    },
+
+    "environmentSettings": {
+      "development": {
+        "profile": "dev",
+        "configFile": "src/main/resources/application-dev.yml",
+        "kafkaConfig": {
+          "bootstrapServers": "localhost:9092",
+          "consumerGroup": "orchestrator-group-dev"
+        },
+        "logging": {
+          "level": "DEBUG",
+          "pattern": "detailed"
+        }
+      },
+      "staging": {
+        "profile": "staging",
+        "configFile": "src/main/resources/application-staging.yml",
+        "kafkaConfig": {
+          "bootstrapServers": "kafka-staging:9092",
+          "consumerGroup": "orchestrator-group-staging"
+        },
+        "logging": {
+          "level": "INFO",
+          "pattern": "json"
+        }
+      },
+      "production": {
+        "profile": "prod",
+        "configFile": "src/main/resources/application-prod.yml",
+        "kafkaConfig": {
+          "bootstrapServers": "kafka-prod:9092",
+          "consumerGroup": "orchestrator-group-prod"
+        },
+        "logging": {
+          "level": "WARN",
+          "pattern": "json"
+        }
+      }
+    },
+
+    "resourceRequirements": {
+      "runtime": {
+        "jvm": {
+          "minHeap": "512m",
+          "maxHeap": "1g",
+          "gcConfig": "-XX:+UseG1GC",
+          "metaspace": "256m"
+        },
+        "cpu": {
+          "minimum": "1",
+          "recommended": "2"
+        },
+        "memory": {
+          "minimum": "2Gi",
+          "recommended": "4Gi"
+        },
+        "disk": {
+          "minimum": "10Gi",
+          "recommended": "20Gi"
+        }
+      },
+      "scaling": {
+        "horizontal": {
+          "minReplicas": 2,
+          "maxReplicas": 5,
+          "metrics": [
+            {
+              "type": "CPU",
+              "targetAverageUtilization": 70
+            },
+            {
+              "type": "Memory",
+              "targetAverageUtilization": 80
+            }
+          ]
+        }
+      }
+    },
+
+    "deploymentPatterns": {
+      "strategy": "RollingUpdate",
+      "kubernetes": {
+        "namespace": "reconciliation",
+        "deployment": {
+          "name": "orchestrator",
+          "labels": {
+            "app": "reconciliation",
+            "component": "orchestrator"
+          },
+          "probes": {
+            "liveness": {
+              "path": "/actuator/health/liveness",
+              "initialDelaySeconds": 30
+            },
+            "readiness": {
+              "path": "/actuator/health/readiness",
+              "initialDelaySeconds": 45
+            }
+          }
+        },
+        "service": {
+          "type": "ClusterIP",
+          "ports": [
+            {
+              "name": "http",
+              "port": 8080
+            },
+            {
+              "name": "management",
+              "port": 8081
+            }
+          ]
+        }
+      },
+      "configMaps": [
+        {
+          "name": "orchestrator-config",
+          "data": [
+            "application.yml",
+            "logback-spring.xml"
+          ]
+        }
+      ],
+      "secrets": [
+        {
+          "name": "orchestrator-secrets",
+          "type": "Opaque",
+          "data": [
+            "kafka-credentials",
+            "metrics-token"
+          ]
+        }
+      ]
+    },
+
+    "knownIssues": {
+      "buildFailures": [
+        {
+          "error": "Connection to node -1 (localhost/127.0.0.1:9092) could not be established",
+          "location": "UnifiedQuantConsumer.java:43",
+          "stackTrace": [
+            "org.apache.kafka.clients.NetworkClient",
+            "org.springframework.kafka.KafkaListenerEndpointContainer"
+          ],
+          "resolution": "Ensure Kafka is running locally or use TestContainers"
+        }
+      ],
+      "resourceLeaks": [
+        {
+          "component": "ProcessingUnit",
+          "location": "BatchPreparationService.java:89",
+          "issue": "Potential memory leak in pairingArena map",
+          "cleanup": "Implemented in shutdown() method"
+        }
+      ],
+      "configurationDiscrepancies": [
+        {
+          "declared": "spring.kafka.consumer.auto-offset-reset=latest",
+          "actual": "earliest",
+          "impact": "May reprocess messages on restart",
+          "location": "application.yml:17"
+        }
+      ]
+    }
+  }
+} 

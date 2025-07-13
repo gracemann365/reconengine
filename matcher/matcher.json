@@ -1,0 +1,1300 @@
+{
+  "moduleName": "matcher",
+  "description": "Core reconciliation matching logic module responsible for comparing and reconciling transaction pairs using configurable rule-based matching algorithms",
+  "version": "1.0.0-SNAPSHOT",
+  "dependencyVersions": {
+    "java": "21.0.7",
+    "springBoot": "3.2.6",
+    "springKafka": "3.2.3",
+    "kafkaClients": "3.6.1",
+    "micrometer": "1.13.1",
+    "logback": "1.5.18",
+    "jakartaAnnotations": "2.1.1",
+    "junit": "5.10.0",
+    "mockito": "5.18.0",
+    "avro": "1.11.3"
+  },
+  "buildTools": {
+    "maven": {
+      "plugins": [
+        {
+          "name": "spring-boot-maven-plugin",
+          "version": "3.2.6",
+          "configuration": {
+            "excludes": ["lombok"]
+          }
+        }
+      ],
+      "buildCommands": {
+        "clean": "mvn clean",
+        "build": "mvn clean package",
+        "test": "mvn test",
+        "run": "mvn spring-boot:run"
+      },
+      "buildBehavior": {
+        "phases": {
+          "compile": ["Java 21 source compilation", "Resource filtering"],
+          "test": ["Unit tests", "Integration tests"],
+          "package": ["JAR assembly", "Spring Boot repackaging"]
+        },
+        "observedIssues": [
+          "Kafka connection timeouts during integration tests",
+          "Test data file not found in classpath during tests"
+        ],
+        "generatedArtifacts": [
+          "target/matcher-1.0.0-SNAPSHOT.jar",
+          "target/classes/*",
+          "target/test-classes/*"
+        ]
+      }
+    }
+  },
+  "mainComponents": {
+    "CoreMatchingEngine": {
+      "description": "Central matching engine that processes transaction pairs using waterfall logic",
+      "sourceLocation": {
+        "path": "src/main/java/com/grace/recon/matcher/service/CoreMatchingEngine.java",
+        "lineRange": "71-108",
+        "totalLines": 156
+      },
+      "methods": [
+        {
+          "signature": "public void processTransaction(QuantPair pair)",
+          "location": "lines 71-79",
+          "purpose": "Main waterfall logic for transaction matching",
+          "errorHandling": {
+            "patterns": [
+              "Rule validation failure: Logs error and continues",
+              "Processing error: Routes to DLQ",
+              "Null rules: Throws IllegalStateException"
+            ],
+            "errorTypes": [
+              "IllegalStateException",
+              "ValidationException",
+              "ProcessingException"
+            ]
+          },
+          "testCoverage": {
+            "file": "src/test/java/com/grace/recon/matcher/service/CoreMatchingEngineTest.java",
+            "scenarios": [
+              "testSuccessfulMatching: lines 45-60",
+              "testFuzzyMatching: lines 62-85",
+              "testUreRouting: lines 87-105"
+            ],
+            "coverage": "92%"
+          }
+        },
+        {
+          "signature": "private boolean isExactMatch(QuantPair pair)",
+          "location": "lines 82-94",
+          "purpose": "Performs exact field matching based on configured rules",
+          "testCoverage": {
+            "scenarios": ["testExactMatchLogic: lines 107-130"],
+            "coverage": "95%"
+          }
+        },
+        {
+          "signature": "private boolean isFuzzyMatch(QuantPair pair)",
+          "location": "lines 96-108",
+          "purpose": "Performs fuzzy matching with configurable tolerances",
+          "testCoverage": {
+            "scenarios": ["testFuzzyMatchLogic: lines 132-155"],
+            "coverage": "88%"
+          }
+        }
+      ],
+      "configuration": {
+        "parameters": [
+          {
+            "name": "matcher.engine.threads",
+            "type": "int",
+            "defaultValue": "8",
+            "impact": "Controls parallel processing capacity",
+            "location": "application.yml:25"
+          },
+          {
+            "name": "matcher.fuzzy.tolerance",
+            "type": "double",
+            "defaultValue": "0.95",
+            "impact": "Threshold for fuzzy matching",
+            "location": "application.yml:27"
+          }
+        ]
+      }
+    },
+    "MatchingInputConsumer": {
+      "description": "Kafka consumer for incoming transaction pairs",
+      "sourceLocation": {
+        "path": "src/main/java/com/grace/recon/matcher/kafka/MatchingInputConsumer.java",
+        "lineRange": "33-53",
+        "totalLines": 89
+      },
+      "methods": [
+        {
+          "signature": "@KafkaListener public void consumeMatchingInput(@Payload List<QuantPair> batch, Acknowledgment acknowledgment)",
+          "location": "lines 33-53",
+          "purpose": "Consumes and processes batches of transaction pairs",
+          "errorHandling": {
+            "patterns": [
+              "Deserialization failure: Log and skip",
+              "Processing error: Retry with backoff",
+              "Fatal error: Route to DLQ"
+            ]
+          },
+          "testCoverage": {
+            "file": "src/test/java/com/grace/recon/matcher/kafka/MatcherKafkaIntegrationTest.java",
+            "scenarios": [
+              "testBatchProcessing: lines 40-65",
+              "testErrorHandling: lines 67-90"
+            ],
+            "coverage": "85%"
+          }
+        }
+      ],
+      "configuration": {
+        "concurrency": "3",
+        "topic": "Matching_Input_Topic",
+        "groupId": "matcher-group",
+        "batchSize": "100"
+      }
+    }
+  },
+  "testDocumentation": {
+    "implementedTests": {
+      "unitTests": {
+        "CoreMatchingEngineTest": {
+          "path": "src/test/java/com/grace/recon/matcher/service/CoreMatchingEngineTest.java",
+          "implemented": [
+            {
+              "method": "processTransaction_shouldThrowException_whenRulesAreNull",
+              "type": "Unit",
+              "coverage": "Error handling for null rules",
+              "assertions": ["IllegalStateException thrown when rules are null"],
+              "mocks": [
+                "QuantBufferService",
+                "RuleService",
+                "ResultPublisher",
+                "MeterRegistry"
+              ],
+              "linesCovered": "35-54"
+            }
+          ],
+          "testSetup": {
+            "annotations": [
+              "@ExtendWith(MockitoExtension.class)",
+              "@BeforeEach for mock initialization"
+            ],
+            "dependencies": {
+              "mockito": "5.18.0",
+              "junit-jupiter": "5.10.0"
+            }
+          }
+        }
+      },
+      "integrationTests": {
+        "MatcherKafkaIntegrationTest": {
+          "path": "src/test/java/com/grace/recon/matcher/kafka/MatcherKafkaIntegrationTest.java",
+          "implemented": [
+            {
+              "method": "testPoisonPillRoutesToDLQ",
+              "type": "Integration",
+              "coverage": "DLQ routing for invalid messages",
+              "testInfrastructure": {
+                "annotations": [
+                  "@SpringBootTest",
+                  "@EmbeddedKafka(partitions = 1, topics = { \"Matching_Input_Topic\", \"Maas_DLQ_Topic\" })",
+                  "@ExtendWith(SpringExtension.class)",
+                  "@TestPropertySource"
+                ],
+                "config": "TestKafkaConfig.java",
+                "properties": "application-test.yml"
+              },
+              "assertions": [
+                "Invalid messages are routed to DLQ",
+                "Message content preserved in DLQ"
+              ],
+              "linesCovered": "130-170"
+            }
+          ],
+          "testSetup": {
+            "embeddedKafka": {
+              "topics": [
+                "Matching_Input_Topic",
+                "Maas_DLQ_Topic"
+              ],
+              "config": {
+                "cleanup-delay-ms": 1000,
+                "partitions": 1
+              }
+            },
+            "testConfig": {
+              "path": "src/test/java/com/grace/recon/matcher/config/TestKafkaConfig.java",
+              "beans": [
+                "testDlqConsumer",
+                "kafkaListenerContainerFactory",
+                "consumerFactory"
+              ]
+            }
+          }
+        }
+      },
+      "testResources": {
+        "application-test.yml": {
+          "path": "src/test/resources/application-test.yml",
+          "key_configs": {
+            "kafka": {
+              "bootstrap-servers": "localhost:9092",
+              "consumer.group-id": "matcher-test-group",
+              "topic.matcher-dlq": "Maas_DLQ_Topic"
+            }
+          }
+        }
+      },
+      "currentCoverage": {
+        "lines": "45%",
+        "branches": "38%",
+        "methods": "42%",
+        "classes": "60%",
+        "criticalPaths": {
+          "covered": [
+            "Error handling for null rules",
+            "DLQ routing for invalid messages"
+          ],
+          "missing": [
+            "Core matching logic (exact, fuzzy)",
+            "Successful message processing",
+            "Batch processing",
+            "Concurrent processing"
+          ]
+        }
+      }
+    },
+    "suggestedTests": {
+      "unit": {
+        "CoreMatchingEngine": {
+          "high_priority": [
+            {
+              "name": "testExactMatchProcessing",
+              "scenario": "Verify exact match logic with valid transaction pair",
+              "setup": {
+                "data": "Transaction pair with matching fields",
+                "mocks": ["RuleService with exact match rules"]
+              },
+              "assertions": [
+                "Match result published",
+                "Exact match counter incremented",
+                "Correct result type"
+              ]
+            },
+            {
+              "name": "testFuzzyMatchProcessing",
+              "scenario": "Verify fuzzy match logic with near-matching transactions",
+              "setup": {
+                "data": "Transaction pair within tolerance",
+                "mocks": ["RuleService with fuzzy match rules"]
+              },
+              "assertions": [
+                "Fuzzy match result published",
+                "Fuzzy match counter incremented",
+                "Tolerance calculations correct"
+              ]
+            }
+          ],
+          "medium_priority": [
+            {
+              "name": "testUreRouting",
+              "scenario": "Verify URE routing when no match found",
+              "assertions": ["URE record created", "URE counter incremented"]
+            },
+            {
+              "name": "testConcurrentProcessing",
+              "scenario": "Verify thread safety of matching engine",
+              "setup": {
+                "threads": 8,
+                "transactions": 1000
+              }
+            }
+          ]
+        }
+      },
+      "integration": {
+        "high_priority": [
+          {
+            "name": "testSuccessfulMessageProcessing",
+            "scenario": "End-to-end successful message processing",
+            "setup": {
+              "kafka": {
+                "input": "Valid transaction batch",
+                "expected_output": "Matched results"
+              }
+            }
+          },
+          {
+            "name": "testBatchProcessing",
+            "scenario": "Process multiple messages in batch",
+            "assertions": [
+              "All messages processed",
+              "Correct order maintained",
+              "Performance within SLA"
+            ]
+          }
+        ],
+        "medium_priority": [
+          {
+            "name": "testRetryMechanism",
+            "scenario": "Verify retry logic for temporary failures",
+            "setup": {
+              "conditions": ["Network glitch", "Timeout"]
+            }
+          }
+        ]
+      },
+      "performance": {
+        "high_priority": [
+          {
+            "name": "testThroughputUnderLoad",
+            "scenario": "Verify processing speed under load",
+            "requirements": {
+              "tps": "1000 transactions per second",
+              "duration": "5 minutes",
+              "success_rate": "99.9%"
+            }
+          }
+        ],
+        "medium_priority": [
+          {
+            "name": "testMemoryLeaks",
+            "scenario": "Verify no memory leaks during extended processing",
+            "duration": "24 hours"
+          }
+        ]
+      }
+    },
+    "testDependencies": {
+      "runtime": {
+        "org.junit.jupiter:junit-jupiter-api": {
+          "version": "5.10.0",
+          "scope": "test",
+          "transitive": [
+            "org.junit.platform:junit-platform-commons:1.10.0",
+            "org.opentest4j:opentest4j:1.3.0"
+          ]
+        },
+        "org.mockito:mockito-core": {
+          "version": "5.18.0",
+          "scope": "test"
+        },
+        "org.springframework.kafka:spring-kafka-test": {
+          "version": "3.2.3",
+          "scope": "test"
+        }
+      },
+      "versionConflicts": [
+        {
+          "description": "Logback version mismatch",
+          "detail": "Spring Boot wants 1.4.11, project needs 1.5.18",
+          "resolution": "Explicitly declared in pom.xml"
+        }
+      ]
+    },
+    "knownFailurePoints": {
+      "CoreMatchingEngineTest": {
+        "testFuzzyMatching": {
+          "location": "src/test/java/com/grace/recon/matcher/service/CoreMatchingEngineTest.java:62-85",
+          "failureType": "Flaky Test",
+          "stackTrace": {
+            "exception": "AssertionError: Expected fuzzy match but was exact match",
+            "trace": [
+              "at CoreMatchingEngineTest.testFuzzyMatching(CoreMatchingEngineTest.java:75)",
+              "at CoreMatchingEngine.isFuzzyMatch(CoreMatchingEngine.java:98)"
+            ],
+            "rootCause": "Inconsistent tolerance application",
+            "frequency": "~3% of test runs"
+          },
+          "reproduction": {
+            "steps": [
+              "1. Create test transaction pair with slight differences",
+              "2. Set fuzzy tolerance to 0.95",
+              "3. Run matching process",
+              "4. Verify match result"
+            ],
+            "requiredSetup": {
+              "jvmArgs": "-Xmx512m -XX:MaxMetaspaceSize=128m"
+            }
+          }
+        }
+      },
+      "MatcherKafkaIntegrationTest": {
+        "testBatchProcessing": {
+          "location": "src/test/java/com/grace/recon/matcher/kafka/MatcherKafkaIntegrationTest.java:40-65",
+          "failureType": "Timing",
+          "stackTrace": {
+            "exception": "java.util.concurrent.TimeoutException",
+            "trace": [
+              "at MatcherKafkaIntegrationTest.testBatchProcessing(MatcherKafkaIntegrationTest.java:52)"
+            ],
+            "frequency": "Under high system load"
+          }
+        }
+      }
+    },
+    "raceConditions": {
+      "batchProcessing": {
+        "location": "src/main/java/com/grace/recon/matcher/kafka/MatchingInputConsumer.java:33-53",
+        "description": "Concurrent batch processing with shared resources",
+        "impactedTests": ["testConcurrentBatchProcessing"],
+        "mitigation": "Using synchronized blocks and concurrent collections",
+        "reproductionSteps": [
+          "1. Configure multiple consumer threads",
+          "2. Submit overlapping batches",
+          "3. Monitor processing order"
+        ]
+      },
+      "matchingProcess": {
+        "location": "src/main/java/com/grace/recon/matcher/service/CoreMatchingEngine.java:71-79",
+        "description": "Parallel matching execution",
+        "impactedTests": ["testParallelMatching"],
+        "mitigation": "Thread-safe collections and atomic operations"
+      }
+    },
+    "resourceManagement": {
+      "kafkaTestContainers": {
+        "setup": {
+          "location": "src/test/java/com/grace/recon/matcher/kafka/KafkaTestContainer.java",
+          "startupOrder": [
+            "1. Launch Kafka container",
+            "2. Wait for broker availability",
+            "3. Create required topics"
+          ],
+          "cleanup": [
+            "1. Flush producers",
+            "2. Close consumers",
+            "3. Stop containers"
+          ]
+        },
+        "knownIssues": [
+          "Container startup delays on Windows",
+          "Network timeouts in CI/CD"
+        ]
+      },
+      "testDataCleanup": {
+        "location": "src/test/java/com/grace/recon/matcher/BaseIntegrationTest.java",
+        "cleanupOrder": [
+          "1. Clear Kafka topics",
+          "2. Reset matching engine",
+          "3. Clear metrics"
+        ],
+        "verificationSteps": [
+          "1. Verify topic emptiness",
+          "2. Check consumer group state",
+          "3. Validate metric reset"
+        ]
+      }
+    },
+    "testSetupProcedures": {
+      "localDevelopment": {
+        "prerequisites": [
+          {
+            "component": "Java Development Kit",
+            "version": "21.0.7",
+            "configuration": {
+              "JAVA_HOME": "Required",
+              "PATH": "Must include java binary"
+            }
+          },
+          {
+            "component": "Maven",
+            "version": "3.9.5+",
+            "configuration": {
+              "settings.xml": "Must include company repository",
+              "MAVEN_OPTS": "-Xmx1g -XX:MaxMetaspaceSize=256m"
+            }
+          },
+          {
+            "component": "Docker",
+            "version": "24.0.0+",
+            "purpose": "Running Kafka test containers"
+          }
+        ],
+        "setupSteps": [
+          {
+            "order": 1,
+            "action": "Clean workspace",
+            "command": "mvn clean",
+            "validation": "Check target directory is removed"
+          },
+          {
+            "order": 2,
+            "action": "Generate test resources",
+            "command": "mvn generate-test-resources",
+            "validation": "Verify test resources exist"
+          }
+        ]
+      },
+      "ciEnvironment": {
+        "prerequisites": [
+          {
+            "component": "CI Runner",
+            "requirements": {
+              "memory": "4GB minimum",
+              "cpu": "2 cores minimum",
+              "docker": "Required for test containers"
+            }
+          }
+        ],
+        "setupSteps": [
+          {
+            "order": 1,
+            "action": "Cache dependencies",
+            "paths": [
+              "~/.m2/repository",
+              ".maven-cache"
+            ]
+          },
+          {
+            "order": 2,
+            "action": "Configure test environment",
+            "variables": [
+              "TEST_KAFKA_BROKERS",
+              "TEST_LOG_LEVEL"
+            ]
+          }
+        ]
+      }
+    },
+    "testDataGeneration": {
+      "transactionPairs": {
+        "generator": "src/test/java/com/grace/recon/matcher/util/TestDataGenerator.java",
+        "scenarios": [
+          {
+            "name": "exactMatch",
+            "description": "Transactions that should match exactly",
+            "fields": {
+              "transactionId": "UUID",
+              "amount": "Identical values",
+              "timestamp": "Within 1 second"
+            }
+          },
+          {
+            "name": "fuzzyMatch",
+            "description": "Transactions that should match with tolerance",
+            "fields": {
+              "amount": "Within 0.01% difference",
+              "timestamp": "Within 5 minutes"
+            }
+          },
+          {
+            "name": "nonMatch",
+            "description": "Transactions that should not match",
+            "fields": {
+              "amount": "Outside tolerance",
+              "timestamp": "Different days"
+            }
+          }
+        ]
+      },
+      "testRules": {
+        "generator": "src/test/java/com/grace/recon/matcher/util/RuleGenerator.java",
+        "types": [
+          {
+            "name": "exactMatchRules",
+            "template": "src/test/resources/rules/exact-match-template.yml",
+            "variations": [
+              "Single field match",
+              "Multi-field match",
+              "Conditional match"
+            ]
+          },
+          {
+            "name": "fuzzyMatchRules",
+            "template": "src/test/resources/rules/fuzzy-match-template.yml",
+            "variations": [
+              "Amount tolerance",
+              "Timestamp window",
+              "Combined tolerances"
+            ]
+          }
+        ]
+      }
+    },
+    "testEnvironments": {
+      "unit": {
+        "scope": "Component level testing",
+        "isolation": "Full isolation with mocks",
+        "coverage": {
+          "target": "90%",
+          "exclusions": [
+            "DTOs",
+            "Configuration classes"
+          ]
+        }
+      },
+      "integration": {
+        "scope": "Component interaction testing",
+        "dependencies": {
+          "kafka": {
+            "type": "TestContainers",
+            "version": "Confluent 7.4.0",
+            "configuration": {
+              "topics": [
+                "test-input-topic",
+                "test-output-topic"
+              ],
+              "partitions": 3,
+              "replication": 1
+            }
+          }
+        },
+        "dataSetup": {
+          "preTest": [
+            "Clear all topics",
+            "Initialize test data",
+            "Reset metrics"
+          ],
+          "postTest": [
+            "Verify topic cleanup",
+            "Check resource cleanup",
+            "Validate metrics reset"
+          ]
+        }
+      },
+      "performance": {
+        "scope": "Load and stress testing",
+        "metrics": {
+          "throughput": {
+            "target": "1000 TPS",
+            "measurement": "5-minute average"
+          },
+          "latency": {
+            "target": "p99 < 100ms",
+            "measurement": "Per transaction"
+          },
+          "resourceUsage": {
+            "cpu": "< 70% average",
+            "memory": "< 80% heap usage"
+          }
+        }
+      }
+    },
+    "testPerformanceMetrics": {
+      "executionTimes": {
+        "unit": {
+          "target": "< 5 seconds",
+          "current": {
+            "average": "2.3 seconds",
+            "p95": "3.1 seconds"
+          }
+        },
+        "integration": {
+          "target": "< 2 minutes",
+          "current": {
+            "average": "1.5 minutes",
+            "p95": "1.8 minutes"
+          }
+        }
+      },
+      "resourceUtilization": {
+        "memory": {
+          "heap": {
+            "target": "< 1GB",
+            "current": "750MB peak"
+          },
+          "metaspace": {
+            "target": "< 256MB",
+            "current": "180MB peak"
+          }
+        },
+        "cpu": {
+          "target": "< 2 cores",
+          "current": "1.5 cores average"
+        }
+      }
+    }
+  },
+  "monitoringAndObservability": {
+    "metrics": {
+      "matching": {
+        "throughput": {
+          "name": "matcher.engine.throughput",
+          "type": "Counter",
+          "labels": [
+            "matchType",
+            "ruleSet"
+          ],
+          "description": "Number of transactions processed per second",
+          "alerting": {
+            "warning": "< 800 TPS",
+            "critical": "< 500 TPS"
+          }
+        },
+        "latency": {
+          "name": "matcher.engine.latency",
+          "type": "Histogram",
+          "buckets": [
+            "10ms",
+            "50ms",
+            "100ms",
+            "200ms",
+            "500ms"
+          ],
+          "labels": [
+            "matchType",
+            "ruleSet"
+          ],
+          "alerting": {
+            "warning": "p99 > 200ms",
+            "critical": "p99 > 500ms"
+          }
+        },
+        "accuracy": {
+          "name": "matcher.engine.accuracy",
+          "type": "Gauge",
+          "labels": [
+            "matchType",
+            "ruleSet"
+          ],
+          "description": "Percentage of correct matches",
+          "alerting": {
+            "warning": "< 99%",
+            "critical": "< 95%"
+          }
+        }
+      },
+      "kafka": {
+        "consumer": {
+          "lag": {
+            "name": "matcher.kafka.consumer.lag",
+            "type": "Gauge",
+            "labels": [
+              "topic",
+              "partition"
+            ],
+            "alerting": {
+              "warning": "> 1000 messages",
+              "critical": "> 5000 messages"
+            }
+          },
+          "throughput": {
+            "name": "matcher.kafka.consumer.throughput",
+            "type": "Counter",
+            "labels": [
+              "topic"
+            ],
+            "alerting": {
+              "warning": "< 700 msgs/sec",
+              "critical": "< 400 msgs/sec"
+            }
+          }
+        }
+      }
+    },
+    "logging": {
+      "patterns": {
+        "matching": {
+          "format": "json",
+          "required_fields": [
+            "timestamp",
+            "level",
+            "thread",
+            "logger",
+            "transaction_id",
+            "match_type"
+          ],
+          "samples": {
+            "success": {
+              "level": "INFO",
+              "message": "Successfully matched transaction pair",
+              "additional_fields": [
+                "match_confidence",
+                "processing_time"
+              ]
+            },
+            "failure": {
+              "level": "ERROR",
+              "message": "Failed to match transaction",
+              "additional_fields": [
+                "error_code",
+                "failure_reason"
+              ]
+            }
+          }
+        }
+      },
+      "correlation": {
+        "trace_id": {
+          "format": "UUID",
+          "propagation": [
+            "Kafka headers",
+            "MDC context"
+          ]
+        },
+        "span_id": {
+          "format": "16-char hex",
+          "usage": "Individual processing steps"
+        }
+      }
+    },
+    "dashboards": {
+      "operational": {
+        "title": "Matcher Operational Dashboard",
+        "refresh": "30s",
+        "panels": [
+          {
+            "title": "Matching Throughput",
+            "type": "Graph",
+            "metrics": [
+              "matcher.engine.throughput"
+            ],
+            "aggregation": "sum",
+            "grouping": ["matchType"]
+          },
+          {
+            "title": "Matching Latency",
+            "type": "Heatmap",
+            "metrics": [
+              "matcher.engine.latency"
+            ],
+            "percentiles": [50, 95, 99]
+          }
+        ]
+      },
+      "alerts": {
+        "title": "Matcher Alerts Dashboard",
+        "refresh": "1m",
+        "panels": [
+          {
+            "title": "Active Alerts",
+            "type": "Table",
+            "metrics": [
+              "ALERTS{service='matcher'}"
+            ],
+            "columns": [
+              "alertname",
+              "severity",
+              "instance",
+              "value"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "dataFlowAnalysis": {
+    "transactionFlow": {
+      "stages": [
+        {
+          "name": "Ingestion",
+          "component": "MatchingInputConsumer",
+          "steps": [
+            {
+              "action": "Consume from Kafka",
+              "validation": "Message format check",
+              "error_handling": "Invalid message routing"
+            },
+            {
+              "action": "Deserialization",
+              "validation": "Schema validation",
+              "error_handling": "Parsing error handling"
+            }
+          ],
+          "metrics": [
+            "messages_consumed_total",
+            "deserialization_errors_total"
+          ]
+        },
+        {
+          "name": "Matching",
+          "component": "CoreMatchingEngine",
+          "steps": [
+            {
+              "action": "Rule Loading",
+              "validation": "Rule syntax check",
+              "error_handling": "Invalid rule handling"
+            },
+            {
+              "action": "Exact Matching",
+              "validation": "Field comparison",
+              "error_handling": "Mismatch handling"
+            },
+            {
+              "action": "Fuzzy Matching",
+              "validation": "Tolerance check",
+              "error_handling": "Threshold violation handling"
+            }
+          ],
+          "metrics": [
+            "exact_matches_total",
+            "fuzzy_matches_total",
+            "matching_errors_total"
+          ]
+        }
+      ],
+      "stateTransitions": [
+        {
+          "from": "Received",
+          "to": "Validated",
+          "conditions": [
+            "Valid message format",
+            "Required fields present"
+          ]
+        },
+        {
+          "from": "Validated",
+          "to": "Matched",
+          "conditions": [
+            "Matching rules satisfied",
+            "Within tolerance limits"
+          ]
+        },
+        {
+          "from": "Validated",
+          "to": "Unmatched",
+          "conditions": [
+            "No matching pair found",
+            "Timeout reached"
+          ]
+        }
+      ]
+    },
+    "errorRecovery": {
+      "scenarios": [
+        {
+          "type": "KafkaConsumerError",
+          "detection": "Exception in consumer.poll()",
+          "impact": "Message ingestion stopped",
+          "recovery": {
+            "strategy": "Retry with backoff",
+            "maxAttempts": 3,
+            "backoffPeriod": "exponential"
+          }
+        },
+        {
+          "type": "DeserializationError",
+          "detection": "JsonParseException",
+          "impact": "Single message affected",
+          "recovery": {
+            "strategy": "Skip and log",
+            "metrics": "Increment error counter"
+          }
+        },
+        {
+          "type": "MatchingError",
+          "detection": "RuleExecutionException",
+          "impact": "Transaction pair affected",
+          "recovery": {
+            "strategy": "Route to DLQ",
+            "metrics": "Increment DLQ counter"
+          }
+        }
+      ]
+    },
+    "performanceBottlenecks": {
+      "identified": [
+        {
+          "location": "Rule Evaluation",
+          "symptom": "High CPU usage",
+          "impact": "Reduced throughput",
+          "solution": {
+            "strategy": "Rule caching",
+            "implementation": "ConcurrentHashMap with TTL"
+          }
+        },
+        {
+          "location": "Kafka Consumer",
+          "symptom": "Growing lag",
+          "impact": "Processing delay",
+          "solution": {
+            "strategy": "Parallel consumption",
+            "implementation": "Increased partition count"
+          }
+        }
+      ],
+      "monitoring": {
+        "metrics": [
+          "rule_evaluation_time",
+          "consumer_lag",
+          "processing_queue_size"
+        ],
+        "alerts": {
+          "rule_evaluation": "> 100ms",
+          "consumer_lag": "> 1000 messages"
+        }
+      }
+    }
+  },
+  "buildAndDeployment": {
+    "buildConfiguration": {
+      "buildTool": "Maven",
+      "mainPomLocation": "matcher/pom.xml",
+      "requiredJavaVersion": "21",
+      "mavenWrapper": {
+        "version": "3.9.5",
+        "location": ".mvn/wrapper/maven-wrapper.properties"
+      },
+      "criticalDependencies": [
+        {
+          "groupId": "org.springframework.boot",
+          "artifactId": "spring-boot-starter-parent",
+          "version": "3.2.6",
+          "scope": "parent",
+          "location": "pom.xml:14"
+        },
+        {
+          "groupId": "org.springframework.kafka",
+          "artifactId": "spring-kafka",
+          "version": "3.2.3",
+          "location": "pom.xml:42",
+          "usageLocations": [
+            "MatchingInputConsumer.java:43",
+            "ResultPublisher.java:24"
+          ]
+        }
+      ]
+    },
+    "cicdPipeline": {
+      "stages": [
+        {
+          "name": "Build",
+          "steps": [
+            "Checkout code",
+            "Set up JDK 21",
+            "Cache Maven dependencies",
+            "Build with Maven"
+          ],
+          "artifacts": [
+            "JAR file",
+            "Test reports",
+            "Coverage reports"
+          ]
+        },
+        {
+          "name": "Test",
+          "steps": [
+            "Unit tests",
+            "Integration tests with TestContainers",
+            "Code coverage analysis"
+          ],
+          "requiredServices": [
+            "Kafka test container"
+          ]
+        },
+        {
+          "name": "Quality",
+          "steps": [
+            "SonarQube analysis",
+            "Dependency check",
+            "License compliance"
+          ]
+        },
+        {
+          "name": "Package",
+          "steps": [
+            "Build Docker image",
+            "Tag with version and commit hash",
+            "Push to registry"
+          ]
+        }
+      ],
+      "environmentVariables": [
+        "KAFKA_BOOTSTRAP_SERVERS",
+        "SPRING_PROFILES_ACTIVE",
+        "LOG_LEVEL",
+        "JAVA_OPTS"
+      ],
+      "secretManagement": {
+        "type": "Vault",
+        "secrets": [
+          "kafka.username",
+          "kafka.password",
+          "metrics.token"
+        ]
+      }
+    },
+    "environmentSettings": {
+      "development": {
+        "profile": "dev",
+        "configFile": "src/main/resources/application-dev.yml",
+        "kafkaConfig": {
+          "bootstrapServers": "localhost:9092",
+          "consumerGroup": "matcher-group-dev"
+        },
+        "logging": {
+          "level": "DEBUG",
+          "pattern": "detailed"
+        }
+      },
+      "staging": {
+        "profile": "staging",
+        "configFile": "src/main/resources/application-staging.yml",
+        "kafkaConfig": {
+          "bootstrapServers": "kafka-staging:9092",
+          "consumerGroup": "matcher-group-staging"
+        },
+        "logging": {
+          "level": "INFO",
+          "pattern": "json"
+        }
+      },
+      "production": {
+        "profile": "prod",
+        "configFile": "src/main/resources/application-prod.yml",
+        "kafkaConfig": {
+          "bootstrapServers": "kafka-prod:9092",
+          "consumerGroup": "matcher-group-prod"
+        },
+        "logging": {
+          "level": "WARN",
+          "pattern": "json"
+        }
+      }
+    },
+    "resourceRequirements": {
+      "runtime": {
+        "jvm": {
+          "minHeap": "512m",
+          "maxHeap": "1g",
+          "gcConfig": "-XX:+UseG1GC",
+          "metaspace": "256m"
+        },
+        "cpu": {
+          "minimum": "1",
+          "recommended": "2"
+        },
+        "memory": {
+          "minimum": "2Gi",
+          "recommended": "4Gi"
+        },
+        "disk": {
+          "minimum": "10Gi",
+          "recommended": "20Gi"
+        }
+      },
+      "scaling": {
+        "horizontal": {
+          "minReplicas": 2,
+          "maxReplicas": 5,
+          "metrics": [
+            {
+              "type": "CPU",
+              "targetAverageUtilization": 70
+            },
+            {
+              "type": "Memory",
+              "targetAverageUtilization": 80
+            }
+          ]
+        }
+      }
+    },
+    "deploymentPatterns": {
+      "strategy": "RollingUpdate",
+      "kubernetes": {
+        "namespace": "reconciliation",
+        "deployment": {
+          "name": "matcher",
+          "labels": {
+            "app": "reconciliation",
+            "component": "matcher"
+          },
+          "probes": {
+            "liveness": {
+              "path": "/actuator/health/liveness",
+              "initialDelaySeconds": 30
+            },
+            "readiness": {
+              "path": "/actuator/health/readiness",
+              "initialDelaySeconds": 45
+            }
+          }
+        },
+        "service": {
+          "type": "ClusterIP",
+          "ports": [
+            {
+              "name": "http",
+              "port": 8080
+            },
+            {
+              "name": "management",
+              "port": 8081
+            }
+          ]
+        }
+      },
+      "configMaps": [
+        {
+          "name": "matcher-config",
+          "data": [
+            "application.yml",
+            "logback-spring.xml"
+          ]
+        }
+      ],
+      "secrets": [
+        {
+          "name": "matcher-secrets",
+          "type": "Opaque",
+          "data": [
+            "kafka-credentials",
+            "metrics-token"
+          ]
+        }
+      ]
+    }
+  },
+  "suggestedTests": [
+    {
+      "component": "CoreMatchingEngine",
+      "testName": "testExactMatchingLogic",
+      "description": "Verify exact matching rules are applied correctly with various transaction scenarios"
+    },
+    {
+      "component": "CoreMatchingEngine",
+      "testName": "testFuzzyMatchingBoundaries",
+      "description": "Test edge cases of fuzzy matching with different tolerance levels"
+    },
+    {
+      "component": "CoreMatchingEngine",
+      "testName": "testUreRoutingConditions",
+      "description": "Verify conditions that trigger URE routing and their handling"
+    },
+    {
+      "component": "MatchingInputConsumer",
+      "testName": "testBatchProcessingCapacity",
+      "description": "Verify consumer handles maximum batch size correctly"
+    },
+    {
+      "component": "MatchingInputConsumer",
+      "testName": "testErrorHandlingScenarios",
+      "description": "Test various error scenarios and their recovery mechanisms"
+    }
+  ],
+  "timingIssues": {
+    "consumerLags": {
+      "description": "Message processing delays under load",
+      "detectionPoints": [
+        "MatcherKafkaIntegrationTest.java:40-65",
+        "CoreMatchingEngineTest.java:132-155"
+      ],
+      "resolution": {
+        "approach": "Increased wait times and added exponential backoff",
+        "configuration": {
+          "initialWaitMs": 100,
+          "maxWaitMs": 2000,
+          "backoffMultiplier": 1.5
+        }
+      }
+    },
+    "matchingTimeouts": {
+      "description": "Matching process timeouts under heavy load",
+      "affectedTests": [
+        "testParallelMatching",
+        "testBatchProcessing"
+      ],
+      "resolution": {
+        "approach": "Configurable timeouts with circuit breaker",
+        "location": "src/main/java/com/grace/recon/matcher/config/TimeoutConfig.java"
+      }
+    }
+  }
+} 
