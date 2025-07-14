@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ class TraceServiceTest {
 
   @Mock private OpenTelemetry mockOpenTelemetry;
   @Mock private io.opentelemetry.api.trace.Tracer mockTracer;
+  @Mock private SpanBuilder mockSpanBuilder;
   @Mock private Span mockSpan;
   @Mock private Scope mockScope;
 
@@ -26,8 +28,11 @@ class TraceServiceTest {
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
+    
+    // Setup the mock chain
     when(mockOpenTelemetry.getTracer(anyString(), anyString())).thenReturn(mockTracer);
-    when(mockTracer.spanBuilder(anyString()).startSpan()).thenReturn(mockSpan);
+    when(mockTracer.spanBuilder(anyString())).thenReturn(mockSpanBuilder);
+    when(mockSpanBuilder.startSpan()).thenReturn(mockSpan);
     when(mockSpan.makeCurrent()).thenReturn(mockScope);
 
     traceService = new TraceService(mockOpenTelemetry);
@@ -35,23 +40,29 @@ class TraceServiceTest {
 
   @Test
   void testStartSpan() {
-    Span span = traceService.startSpan("testSpan");
+    String spanName = "testSpan";
+    Span span = traceService.startSpan(spanName);
+    
     assertNotNull(span);
-    verify(mockTracer, times(1)).spanBuilder("testSpan");
-    verify(mockTracer.spanBuilder("testSpan"), times(1)).startSpan();
+    verify(mockTracer).spanBuilder(spanName);
+    verify(mockSpanBuilder).startSpan();
   }
 
   @Test
   void testStartAndMakeCurrentSpan() {
-    Scope scope = traceService.startAndMakeCurrentSpan("testCurrentSpan");
+    String spanName = "testCurrentSpan";
+    Scope scope = traceService.startAndMakeCurrentSpan(spanName);
+    
     assertNotNull(scope);
-    verify(mockSpan, times(1)).makeCurrent();
+    verify(mockTracer).spanBuilder(spanName);
+    verify(mockSpanBuilder).startSpan();
+    verify(mockSpan).makeCurrent();
   }
 
   @Test
   void testEndSpan() {
     traceService.endSpan(mockSpan);
-    verify(mockSpan, times(1)).end();
+    verify(mockSpan).end();
   }
 
   @Test
@@ -65,7 +76,7 @@ class TraceServiceTest {
   void testRecordException() {
     RuntimeException exception = new RuntimeException("Test Exception");
     traceService.recordException(mockSpan, exception);
-    verify(mockSpan, times(1)).recordException(exception);
+    verify(mockSpan).recordException(exception);
   }
 
   @Test

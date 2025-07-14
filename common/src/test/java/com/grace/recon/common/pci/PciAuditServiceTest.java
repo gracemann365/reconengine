@@ -6,6 +6,7 @@ import static org.mockito.Mockito.times;
 import com.grace.recon.common.monitoring.AuditLogger;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -19,6 +20,14 @@ class PciAuditServiceTest {
   void setUp() {
     // Mock the static AuditLogger class before each test
     mockedAuditLogger = Mockito.mockStatic(AuditLogger.class);
+  }
+
+  @AfterEach
+  void tearDown() {
+    // Close the static mock to prevent leakage between tests
+    if (mockedAuditLogger != null) {
+      mockedAuditLogger.close();
+    }
   }
 
   @Test

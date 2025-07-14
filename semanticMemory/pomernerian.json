@@ -1,1141 +1,175 @@
 {
-  "parentPom": {
-    "coordinates": {
-      "groupId": "com.grace.recon",
-      "artifactId": "reconengine",
-      "version": "1.0.0-SNAPSHOT",
-      "packaging": "pom",
-      "name": "Reconciliation Engine PoC Parent",
-      "description": "Parent POM for the Reconciliation Engine Proof of Concept microservices."
+  "analysis_timestamp": "2025-07-14T16:36:02Z",
+  "project_coordinates": {
+    "groupId": "com.grace.recon",
+    "artifactId": "reconengine",
+    "version": "1.0.0-SNAPSHOT",
+    "packaging": "pom"
+  },
+  "parent_pom_summary": {
+    "properties": {
+      "java.version": "21",
+      "spring-boot.version": "3.2.6",
+      "logback.version": "1.5.18",
+      "logstash-logback-encoder.version": "8.0",
+      "resilience4j.version": "2.1.0",
+      "esapi.version": "2.2.0.0",
+      "jjwt.version": "0.11.5",
+      "commons-csv.version": "1.10.0",
+      "jakarta-annotation-api.version": "2.1.1",
+      "spring-kafka.version": "3.2.3",
+      "kafka-clients.version": "3.6.1"
     },
-    "buildEnvironment": {
-      "encoding": "UTF-8",
-      "compilerSettings": {
-        "source": "${java.version}",
-        "target": "${java.version}"
-      }
-    },
-    "pluginVersionManagement": {
-      "build": {
-        "maven-clean-plugin": "3.4.1",
-        "maven-resources-plugin": "3.3.1",
-        "maven-compiler-plugin": "3.14.0",
-        "maven-jar-plugin": "3.4.2",
-        "maven-install-plugin": "3.1.4",
-        "maven-deploy-plugin": "3.1.4",
-        "maven-source-plugin": "3.3.1",
-        "maven-shade-plugin": "3.6.0",
-        "maven-enforcer-plugin": "3.5.0",
-        "build-helper-maven-plugin": "3.6.1"
-      },
-      "testing": {
-        "maven-surefire-plugin": "3.2.5",
-        "maven-failsafe-plugin": "3.2.5"
-      },
-      "quality": {
-        "jacoco-maven-plugin": "0.8.13",
-        "spotless-maven-plugin": "2.44.5",
-        "versions-maven-plugin": "1.10.0",
-        "owasp-dependency-check": "12.1.0"
-      },
-      "specific": {
-        "avro-maven-plugin": "1.11.3",
-        "spring-boot-maven-plugin": "3.2.6"
-      }
-    },
-    "dependencyManagement": {
-      "boms": [
-        {
-          "name": "spring-boot-dependencies",
-          "version": "3.2.6",
-          "scope": "import"
-        },
-        {
-          "name": "resilience4j-bom",
-          "version": "2.1.0",
-          "scope": "import"
-        },
-        {
-          "name": "junit-bom",
-          "version": "5.10.0",
-          "scope": "import"
-        }
+    "dependency_management": {
+      "boms_imported": [
+        "org.springframework.boot:spring-boot-dependencies:3.2.6",
+        "io.github.resilience4j:resilience4j-bom:2.1.0",
+        "org.junit:junit-bom:5.10.0"
       ],
-      "explicitVersions": {
-        "spring": {
-          "spring-kafka": "3.2.3",
-          "spring-kafka-test": "3.2.3"
-        },
-        "kafka": {
-          "kafka-clients": "3.6.1",
-          "kafka-avro-serializer": "7.5.1",
-          "avro": "1.11.3"
-        },
-        "monitoring": {
-          "micrometer-core": "1.13.1",
-          "micrometer-registry-prometheus": "1.13.1",
-          "logback-classic": "1.5.18",
-          "opentelemetry-api": "1.38.0"
-        },
-        "security": {
-          "esapi": "2.2.0.0",
-          "jjwt": {
-            "version": "0.11.5",
-            "modules": ["jjwt-api", "jjwt-impl", "jjwt-jackson"]
-          }
-        },
-        "utils": {
-          "jackson-dataformat-yaml": "2.17.2"
-        }
-      },
-      "exclusions": {
-        "kafka-clients": {
-          "excludes": ["org.slf4j:slf4j-log4j12"]
-        }
-      }
-    }
-  },
-
-  "childModules": {
-    "common": {
-      "type": "Library Module",
-      "packaging": "jar",
-      "name": "Reconciliation Engine Common Libraries",
-      "description": "Shared DTOs, utilities, and cross-cutting concerns for Reconciliation Engine microservices.",
-      "dependencies": {
-        "spring": {
-          "spring-boot-starter": {
-            "exclusions": ["spring-boot-starter-logging"]
-          },
-          "spring-boot-starter-aop": {}
-        },
-        "logging": {
-          "explicit": {
-            "logback-classic": "1.4.14",
-            "logback-core": "1.4.14",
-            "logstash-logback-encoder": "7.4"
-          },
-          "managed": {
-            "slf4j-api": {}
-          }
-        },
-        "resilience4j": {
-          "modules": [
-            "resilience4j-core",
-            "resilience4j-circuitbreaker",
-            "resilience4j-retry",
-            "resilience4j-timelimiter",
-            "resilience4j-micrometer",
-            "resilience4j-spring-boot3"
-          ]
-        },
-        "security": {
-          "jjwt": {
-            "modules": [
-              {"name": "jjwt-api", "scope": "compile"},
-              {"name": "jjwt-impl", "scope": "runtime"},
-              {"name": "jjwt-jackson", "scope": "runtime"}
-            ]
-          },
-          "esapi": {}
-        },
-        "monitoring": {
-          "opentelemetry": {
-            "modules": [
-              {"name": "opentelemetry-api"},
-              {"name": "opentelemetry-sdk", "version": "1.38.0"},
-              {
-                "name": "opentelemetry-exporter-otlp",
-                "version": "1.38.0",
-                "exclusions": ["opentelemetry-exporter-sender-okhttp"]
-              }
-            ]
-          },
-          "micrometer": [
-            "micrometer-core",
-            "micrometer-registry-prometheus"
-          ]
-        },
-        "test": {
-          "junit-jupiter": {"scope": "test"},
-          "mockito-core": {"scope": "test"},
-          "spring-boot-starter-test": {"scope": "test"}
-        }
-      },
-      "buildPlugins": {
-        "jacoco": {
-          "executions": [
-            {"id": "default-prepare-agent", "goal": "prepare-agent"},
-            {"id": "default-report", "phase": "test", "goal": "report"},
-            {
-              "id": "jacoco-check",
-              "goal": "check",
-              "rules": {
-                "bundle": {
-                  "limits": [
-                    {"counter": "LINE", "value": "COVEREDRATIO", "minimum": 0.90},
-                    {"counter": "BRANCH", "value": "COVEREDRATIO", "minimum": 0.90}
-                  ]
-                }
-              }
-            }
-          ]
-        }
-      }
-    },
-
-    "naas": {
-      "type": "Service Module",
-      "packaging": "jar",
-      "name": "Reconciliation Engine NaaS Microservice",
-      "description": "NaaS Microservice for the Reconciliation Engine PoC.",
-      "dependencies": {
-        "spring": {
-          "spring-boot-starter": {
-            "exclusions": ["spring-boot-starter-logging"]
-          },
-          "spring-boot-starter-web": {},
-          "spring-boot-starter-actuator": {},
-          "spring-kafka": {}
-        },
-        "logging": {
-          "explicit": {
-            "logback-classic": "1.4.14",
-            "logback-core": "1.4.14"
-          }
-        },
-        "utils": {
-          "commons-csv": "1.10.0"
-        },
-        "internal": {
-          "common": {}
-        },
-        "test": {
-          "spring-boot-starter-test": {"scope": "test"},
-          "junit-jupiter-api": {"scope": "test"},
-          "mockito-core": {"scope": "test"}
-        }
-      },
-      "buildPlugins": {
-        "spring-boot-maven-plugin": {
-          "executions": [
-            {"goals": ["repackage"]}
-          ]
-        }
-      }
-    },
-
-    "orchestrator": {
-      "type": "Service Module",
-      "packaging": "jar",
-      "name": "Reconciliation Engine Orchestrator Microservice",
-      "description": "Orchestrator Microservice for the Reconciliation Engine PoC.",
-      "dependencies": {
-        "spring": {
-          "spring-boot-starter": {},
-          "spring-boot-starter-actuator": {},
-          "spring-kafka": {}
-        },
-        "jakarta": {
-          "jakarta.annotation-api": "2.1.1"
-        },
-        "monitoring": {
-          "micrometer-registry-prometheus": {"scope": "runtime"}
-        },
-        "logging": {
-          "explicit": {
-            "logback-classic": "1.4.14",
-            "logback-core": "1.4.14"
-          }
-        },
-        "internal": {
-          "common": {}
-        },
-        "test": {
-          "spring-boot-starter-test": {"scope": "test"},
-          "junit-jupiter-api": {"scope": "test"},
-          "mockito-core": {"scope": "test"}
-        }
-      }
-    },
-
-    "reporter": {
-      "type": "Service Module",
-      "packaging": "jar",
-      "name": "Reporter Service",
-      "description": "RepaaS - Analytical reporting from Kafka persistence via Kafka Streams.",
-      "dependencies": {
-        "spring": {
-          "spring-boot-starter-web": {},
-          "spring-kafka": {}
-        },
-        "kafka": {
-          "kafka-streams": {}
-        },
-        "internal": {
-          "common": {}
-        },
-        "test": {
-          "spring-boot-starter-test": {"scope": "test"},
-          "spring-kafka-test": {"scope": "test"}
-        }
-      },
-      "uniqueCharacteristics": {
-        "noExplicitLogging": true,
-        "streamsFocus": true,
-        "minimalTestDependencies": true
-      }
-    },
-
-    "escalator": {
-      "type": "Service Module",
-      "packaging": "jar",
-      "name": "Reconciliation Engine Escalator Microservice",
-      "description": "Escalator Microservice for the Reconciliation Engine PoC.",
-      "dependencies": {
-        "spring": {
-          "spring-boot-starter": {},
-          "spring-boot-starter-data-mongodb": {},
-          "spring-kafka": {}
-        },
-        "internal": {
-          "common": {}
-        },
-        "test": {
-          "spring-boot-starter-test": {"scope": "test"},
-          "junit-jupiter-api": {"scope": "test"},
-          "mockito-core": {"scope": "test"}
-        }
-      },
-      "uniqueCharacteristics": {
-        "onlyModuleWithMongoDB": true,
-        "noExplicitLogging": true
-      }
-    },
-
-    "monitor": {
-      "type": "Service Module",
-      "packaging": "jar",
-      "name": "Reconciliation Engine Monitor Microservice",
-      "description": "Monitor Microservice for the Reconciliation Engine PoC.",
-      "dependencies": {
-        "spring": {
-          "spring-boot-starter": {}
-        },
-        "internal": {
-          "common": {}
-        },
-        "test": {
-          "spring-boot-starter-test": {"scope": "test"},
-          "junit-jupiter-api": {"scope": "test"},
-          "mockito-core": {"scope": "test"}
-        }
-      },
-      "uniqueCharacteristics": {
-        "minimalDependencies": true,
-        "noKafka": true,
-        "noExplicitLogging": true
-      }
-    }
-  },
-
-  "dependencyAnalysis": {
-    "commonPatterns": {
-      "springBoot": {
-        "allModules": ["spring-boot-starter"],
-        "mostModules": ["spring-boot-starter-actuator", "spring-kafka"],
-        "specialized": {
-          "web": ["reporter", "naas"],
-          "mongodb": ["escalator"]
-        }
-      },
-      "testing": {
-        "universal": {
-          "spring-boot-starter-test": "All modules",
-          "junit-jupiter": "All modules",
-          "mockito": {
-            "core": "All modules",
-            "inline": "Added to common module for static mocking"
-          }
-        },
-        "specific": {
-          "spring-kafka-test": ["reporter"]
-        }
-      },
-      "logging": {
-        "explicit": {
-          "modules": ["common", "naas", "orchestrator"],
-          "version": "1.4.14",
-          "components": ["logback-classic", "logback-core"]
-        },
-        "inherited": {
-          "modules": ["reporter", "escalator", "monitor"],
-          "through": "spring-boot-starter"
-        }
-      }
-    },
-
-    "uniqueFeatures": {
-      "common": {
-        "resilience4j": "Full resilience4j stack",
-        "security": "JWT and ESAPI",
-        "monitoring": "Complete OpenTelemetry setup",
-        "testCoverage": "90% line and branch coverage requirement"
-      },
-      "naas": {
-        "csv": "Only module with CSV processing",
-        "webEndpoints": "REST API exposure"
-      },
-      "orchestrator": {
-        "annotations": "Explicit Jakarta Annotations API",
-        "prometheus": "Runtime prometheus registry"
-      },
-      "reporter": {
-        "streams": "Only module with Kafka Streams",
-        "minimal": "Focused streaming dependencies"
-      },
-      "escalator": {
-        "mongodb": "Only module with MongoDB support"
-      },
-      "monitor": {
-        "minimal": "Most minimal dependency set"
-      }
-    }
-  },
-
-  "consistencyAnalysis": {
-    "versionManagement": {
-      "wellManaged": {
-        "description": "Versions properly inherited from parent",
-        "examples": [
-          "Spring Boot and its starters",
-          "Kafka core dependencies",
-          "Test frameworks",
-          "Commons CSV",
-          "Jakarta Annotation API",
-          "Mockito (core and inline)"
-        ]
-      },
-      "inconsistent": {
-        "logback": {
-          "issue": "Version mismatch",
-          "parent": "1.5.18",
-          "actual": "1.4.14",
-          "affectedModules": ["common", "naas", "orchestrator"],
-          "risk": "Potential runtime conflicts with other Spring Boot managed dependencies",
-          "status": "Intentionally maintained for compatibility"
-        }
-      },
-      "unmanaged": {
-        "description": "Dependencies with explicit versions in modules",
-        "instances": [
-          {
-            "module": "common",
-            "dependency": "logstash-logback-encoder:7.4",
-            "recommendation": "Consider moving to parent management",
-            "status": "Maintained for Logback 1.4.x compatibility"
-          }
-        ]
-      }
-    },
-
-    "structuralPatterns": {
-      "dependencyChain": {
-        "pattern": "All service modules depend only on common",
-        "benefit": "Clean dependency hierarchy",
-        "risk": "Changes to common affect all modules"
-      },
-      "testingStrategy": {
-        "pattern": "Consistent test dependency set across modules",
-        "benefit": "Uniform testing capabilities"
-      },
-      "loggingStrategy": {
-        "pattern": "Mixed explicit and inherited logging",
-        "issue": "Inconsistent logging configuration approach",
-        "recommendation": "Standardize logging setup across modules"
-      }
-    },
-
-    "buildConfiguration": {
-      "plugins": {
-        "consistent": {
-          "spring-boot-maven-plugin": "All modules",
-          "surefire": "All modules (inherited)"
-        },
-        "specialized": {
-          "jacoco": "Strict coverage in common module only"
-        }
-      },
-      "properties": {
-        "inheritance": "Clean inheritance of all build properties from parent",
-        "overrides": "None found in child modules"
-      }
-    }
-  },
-  "pomStateAnalysis": {
-    "currentState": {
-      "versionConflicts": {
-        "logback": {
-          "parentVersion": "1.5.18",
-          "conflictingModules": {
-            "common": "1.4.14",
-            "naas": "1.4.14",
-            "orchestrator": "1.4.14"
-          },
-          "impact": "Version conflicts may cause runtime issues with Spring Boot dependencies",
-          "resolutionNeeded": true
-        }
-      },
-      "unmanagedDependencies": [
-        {
-          "module": "naas",
-          "dependency": "commons-csv",
-          "version": "1.10.0",
-          "shouldBeManaged": true,
-          "location": "naas/pom.xml"
-        },
-        {
-          "module": "orchestrator",
-          "dependency": "jakarta.annotation-api",
-          "version": "2.1.1",
-          "shouldBeManaged": true,
-          "location": "orchestrator/pom.xml"
-        },
-        {
-          "module": "common",
-          "dependency": "logstash-logback-encoder",
-          "version": "7.4",
-          "shouldBeManaged": true,
-          "location": "common/pom.xml"
-        }
-      ],
-      "redundantConfigurations": {
-        "plugins": {
-          "maven-surefire-plugin": {
-            "affectedModules": ["common"],
-            "issue": "Empty plugin declaration redundant with parent",
-            "location": "common/pom.xml"
-          }
-        }
-      }
-    },
-    "moduleSpecificIssues": {
-      "common": {
-        "role": "Core shared library",
-        "criticalIssues": [
-          {
-            "type": "Version Override",
-            "component": "logback",
-            "severity": "High",
-            "details": "Explicitly overrides parent's logback version, breaking version management",
-            "location": "common/pom.xml:lines 45-55"
-          },
-          {
-            "type": "Plugin Configuration",
-            "component": "maven-surefire-plugin",
-            "severity": "Low",
-            "details": "Redundant empty plugin configuration",
-            "location": "common/pom.xml"
-          }
-        ],
-        "dependencyManagement": {
-          "wellManaged": [
-            "spring-boot-starter",
-            "resilience4j modules",
-            "monitoring stack"
-          ],
-          "needsAttention": [
-            "logback versioning",
-            "logstash-logback-encoder version"
-          ]
-        }
-      },
-      "naas": {
-        "role": "Normalization service",
-        "criticalIssues": [
-          {
-            "type": "Version Override",
-            "component": "logback",
-            "severity": "High",
-            "details": "Explicitly overrides parent's logback version",
-            "location": "naas/pom.xml"
-          },
-          {
-            "type": "Unmanaged Dependency",
-            "component": "commons-csv",
-            "severity": "Medium",
-            "details": "Direct version specification bypasses parent management",
-            "location": "naas/pom.xml"
-          }
-        ]
-      },
-      "orchestrator": {
-        "role": "Event orchestration service",
-        "criticalIssues": [
-          {
-            "type": "Unmanaged Dependency",
-            "component": "jakarta.annotation-api",
-            "severity": "Medium",
-            "details": "Direct version specification",
-            "location": "orchestrator/pom.xml"
-          }
-        ]
-      },
-      "matcher": {
-        "role": "Core matching logic",
-        "criticalIssues": [
-          {
-            "type": "Mixed Version Management",
-            "severity": "Medium",
-            "details": "Inconsistent approach to version specification",
-            "location": "matcher/pom.xml"
-          }
-        ]
-      },
-      "reporter": {
-        "role": "Reporting service",
-        "uniqueCharacteristics": {
-          "cleanDependencies": true,
-          "noVersionOverrides": true,
-          "properInheritance": true
-        }
-      },
-      "escalator": {
-        "role": "Issue escalation service",
-        "uniqueCharacteristics": {
-          "cleanDependencies": true,
-          "additionalFeatures": ["MongoDB integration"],
-          "properInheritance": true
-        }
-      },
-      "monitor": {
-        "role": "Monitoring service",
-        "uniqueCharacteristics": {
-          "minimalDependencies": true,
-          "cleanInheritance": true,
-          "noVersionOverrides": true
-        }
-      }
-    },
-    "recommendedActions": {
-      "immediate": [
-        {
-          "action": "Standardize logback version",
-          "affected": ["common", "naas", "orchestrator"],
-          "solution": "Remove explicit versions and use parent's 1.5.18",
-          "impact": "High",
-          "effort": "Medium"
-        },
-        {
-          "action": "Move unmanaged versions to parent",
-          "affected": ["commons-csv", "jakarta.annotation-api", "logstash-logback-encoder"],
-          "solution": "Add to parent's dependencyManagement section",
-          "impact": "Medium",
-          "effort": "Low"
-        },
-        {
-          "action": "Remove redundant plugin configurations",
-          "affected": ["common"],
-          "solution": "Delete empty plugin declarations",
-          "impact": "Low",
-          "effort": "Low"
-        }
-      ],
-      "longTerm": [
-        {
-          "action": "Standardize logging configuration",
-          "description": "Choose between explicit or inherited logging setup",
-          "impact": "High",
-          "effort": "High"
-        },
-        {
-          "action": "Implement version policy",
-          "description": "Create guidelines for version management in child POMs",
-          "impact": "Medium",
-          "effort": "Medium"
-        }
+      "managed_dependencies": [
+        "com.grace.recon:common",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml",
+        "org.springframework.kafka:spring-kafka",
+        "org.springframework.kafka:spring-kafka-test",
+        "org.apache.kafka:kafka-clients",
+        "io.confluent:kafka-avro-serializer",
+        "org.apache.avro:avro",
+        "io.micrometer:micrometer-core",
+        "io.micrometer:micrometer-registry-prometheus",
+        "ch.qos.logback:logback-classic",
+        "ch.qos.logback:logback-core",
+        "io.opentelemetry:opentelemetry-api",
+        "net.logstash.logback:logstash-logback-encoder",
+        "org.owasp.esapi:esapi",
+        "io.jsonwebtoken:jjwt-api",
+        "io.jsonwebtoken:jjwt-impl",
+        "io.jsonwebtoken:jjwt-jackson",
+        "org.apache.commons:commons-csv",
+        "jakarta.annotation:jakarta.annotation-api",
+        "org.mockito:mockito-inline"
       ]
     },
-    "buildSystemHealth": {
-      "overallStatus": "NEEDS_ATTENTION",
-      "majorConcerns": [
-        "Version management inconsistencies",
-        "Mixed logging configuration approaches",
-        "Unmanaged dependencies in child POMs"
-      ],
-      "positiveAspects": [
-        "Clean module hierarchy",
-        "No circular dependencies",
-        "Good use of BOMs",
-        "Proper plugin management"
-      ],
-      "riskAssessment": {
-        "versionConflicts": "Medium",
-        "buildReproducibility": "High",
-        "maintenance": "Medium",
-        "scalability": "High"
-      }
+    "plugin_management": {
+      "spring-boot-maven-plugin": "3.2.6",
+      "maven-surefire-plugin": "3.2.5",
+      "maven-compiler-plugin": "3.14.0",
+      "jacoco-maven-plugin": "0.8.13"
     }
   },
-  "testVsSrcAnalysis": {
-    "moduleSpecificIssues": {
-      "common": {
-        "src": {
-          "versionConflicts": [
-            {
-              "dependency": "logback",
-              "moduleVersion": "1.4.14",
-              "parentVersion": "1.5.18",
-              "severity": "High"
-            },
-            {
-              "dependency": "logstash-logback-encoder",
-              "version": "7.4",
-              "issue": "Unmanaged version",
-              "severity": "Medium"
-            }
-          ]
-        },
-        "test": {
-          "testStatus": {
-            "totalTests": 96,
-            "failures": 11,
-            "errors": 14,
-            "skipped": 0,
-            "categories": {
-              "dlqRouter": {
-                "failures": 2,
-                "type": "Mock Verification",
-                "details": "Logger mock interactions not properly verified"
-              },
-              "monitoring": {
-                "auditLogger": {
-                  "failures": 1,
-                  "type": "Mock Verification",
-                  "details": "Logger info call not verified"
-                },
-                "structuredLogger": {
-                  "failures": 2,
-                  "type": "Assertion",
-                  "details": "Structured logging format verification failed"
-                },
-                "traceService": {
-                  "errors": 7,
-                  "type": "Setup",
-                  "details": "OpenTelemetry tracer initialization failing"
-                }
-              },
-              "security": {
-                "inputSanitizer": {
-                  "errors": 4,
-                  "type": "Configuration",
-                  "details": "ESAPI configuration not properly loaded"
-                },
-                "jwtUtil": {
-                  "errors": 1,
-                  "type": "Logic",
-                  "details": "Token expiration test timing issue"
-                },
-                "luhnValidator": {
-                  "failures": 2,
-                  "type": "Logic",
-                  "details": "Card number validation logic incorrect"
-                }
-              },
-              "resilience": {
-                "aspects": {
-                  "failures": 3,
-                  "type": "Integration",
-                  "details": "Retry and timeout behavior not working as expected"
-                },
-                "config": {
-                  "failures": 2,
-                  "type": "Configuration",
-                  "details": "Duration format mismatch in configuration"
-                }
-              }
-            }
-          },
-          "configurationIssues": [
-            {
-              "type": "ESAPI Configuration",
-              "detail": "Missing or incorrect ESAPI.properties configuration",
-              "severity": "Critical",
-              "impact": "Security input sanitization tests failing"
-            },
-            {
-              "type": "OpenTelemetry Setup",
-              "detail": "Tracer initialization failing in tests",
-              "severity": "High",
-              "impact": "All tracing tests failing"
-            },
-            {
-              "type": "Mock Configuration",
-              "detail": "Static mocking issues with AuditLogger",
-              "severity": "Medium",
-              "impact": "PCI audit tests failing"
-            }
-          ],
-          "configurationFiles": {
-            "logback-test.xml": {
-              "purpose": "Test-specific logging configuration",
-              "location": "common/src/test/resources/logback-test.xml",
-              "features": [
-                "Console appender for test output",
-                "Configurable log levels",
-                "Test-specific logging patterns"
-              ],
-              "status": "Added and configured"
-            }
-          },
-          "coverageRequirements": {
-            "line": "90%",
-            "branch": "90%",
-            "enforced": true,
-            "appliesTo": ["src", "test"]
-          }
+  "module_analysis": {
+    "common": {
+      "description": "Shared DTOs, utilities, and cross-cutting concerns.",
+      "direct_dependencies": [
+        "org.springframework.boot:spring-boot-starter (excludes spring-boot-starter-logging)",
+        "ch.qos.logback:logback-classic",
+        "ch.qos.logback:logback-core",
+        "net.logstash.logback:logstash-logback-encoder",
+        "org.slf4j:slf4j-api",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml",
+        "io.github.resilience4j:resilience4j-spring-boot3",
+        "org.springframework.boot:spring-boot-starter-aop",
+        "io.jsonwebtoken:jjwt-api",
+        "io.opentelemetry:opentelemetry-api",
+        "org.owasp.esapi:esapi",
+        "org.awaitility:awaitility:4.2.2 (test scope, unmanaged)"
+      ],
+      "critical_transitive_dependencies": {
+        "log4j:log4j:1.2.17": {
+          "status": "CRITICAL_RISK",
+          "source": "org.owasp.esapi:esapi",
+          "reason": "Conflicts with the default Logback logging framework provided by Spring Boot. This can cause unpredictable logging behavior and runtime failures."
         }
       },
-      "naas": {
-        "src": {
-          "versionConflicts": [
-            {
-              "dependency": "logback",
-              "moduleVersion": "1.4.14",
-              "parentVersion": "1.5.18",
-              "severity": "High"
-            }
-          ],
-          "unmanagedDependencies": [
-            {
-              "dependency": "commons-csv",
-              "version": "1.10.0",
-              "severity": "Medium"
-            }
-          ]
-        },
-        "test": {
-          "configurationIssues": [
-            {
-              "type": "Logging Configuration",
-              "detail": "Test-specific logging setup issues",
-              "severity": "High"
-            }
-          ],
-          "resourceManagement": [
-            {
-              "type": "Test Data Files",
-              "issue": "Cleanup not implemented",
-              "severity": "Medium"
-            },
-            {
-              "type": "Kafka Test Topics",
-              "issue": "Not properly cleaned up",
-              "severity": "Medium"
-            }
-          ],
-          "versionConflicts": [
-            {
-              "dependency": "junit-jupiter",
-              "detail": "Version mismatch with parent",
-              "severity": "Medium"
-            },
-            {
-              "dependency": "mockito-core",
-              "detail": "Version mismatch with parent",
-              "severity": "Medium"
-            }
-          ]
-        }
-      },
-      "orchestrator": {
-        "src": {
-          "versionConflicts": [
-            {
-              "dependency": "logback",
-              "moduleVersion": "1.4.14",
-              "parentVersion": "1.5.18",
-              "severity": "High"
-            }
-          ],
-          "unmanagedDependencies": [
-            {
-              "dependency": "jakarta.annotation-api",
-              "version": "2.1.1",
-              "severity": "Medium"
-            }
-          ]
-        },
-        "test": {
-          "infrastructureIssues": [
-            {
-              "type": "Kafka Connection",
-              "detail": "Timeouts during integration tests",
-              "severity": "High"
-            },
-            {
-              "type": "Test Data",
-              "detail": "File not found in classpath",
-              "severity": "Medium"
-            }
-          ],
-          "versionConflicts": [
-            {
-              "dependency": "logback",
-              "detail": "Test configuration version mismatch",
-              "severity": "Medium"
-            }
-          ]
-        }
-      },
-      "matcher": {
-        "src": {
-          "versionManagement": {
-            "issue": "Mixed approach to version specification",
-            "severity": "Medium",
-            "impact": "Maintenance confusion"
-          }
-        },
-        "test": {
-          "infrastructureIssues": [
-            {
-              "type": "Kafka Test Containers",
-              "detail": "Configuration and cleanup issues",
-              "severity": "Medium"
-            },
-            {
-              "type": "Test Data",
-              "detail": "File not found in classpath",
-              "severity": "Medium"
-            }
-          ],
-          "versionConflicts": "Inherits same issues as src"
-        }
-      },
-      "reporter": {
-        "src": {
-          "status": "Clean",
-          "characteristics": [
-            "No explicit version overrides",
-            "Proper dependency management"
-          ]
-        },
-        "test": {
-          "characteristics": [
-            "Minimal test dependencies",
-            "Clean test configuration",
-            "Kafka Streams specific setup"
-          ],
-          "status": "Well Managed"
-        }
-      },
-      "escalator": {
-        "src": {
-          "status": "Clean",
-          "characteristics": [
-            "Clean dependency management",
-            "MongoDB integration"
-          ]
-        },
-        "test": {
-          "infrastructureIssues": [
-            {
-              "type": "MongoDB Test Container",
-              "detail": "Setup and cleanup complexities",
-              "severity": "Medium"
-            }
-          ],
-          "versionConflicts": [
-            {
-              "dependency": "mongodb-driver",
-              "detail": "Spring Boot wants 4.11.0, project needs 4.11.1",
-              "severity": "Low"
-            }
-          ]
-        }
-      },
-      "monitor": {
-        "src": {
-          "status": "Clean",
-          "characteristics": [
-            "Minimal dependencies",
-            "Clean inheritance"
-          ]
-        },
-        "test": {
-          "versionConflicts": [
-            {
-              "dependency": "prometheus-client",
-              "detail": "Spring Boot wants 0.15.0, project needs 0.16.0",
-              "severity": "Medium"
-            }
-          ],
-          "infrastructureIssues": [
-            {
-              "type": "Test Containers",
-              "components": ["Prometheus", "Grafana"],
-              "status": "Planned"
-            }
-          ],
-          "implementation": {
-            "status": "Planning Phase",
-            "completeness": "Low"
-          }
-        }
+      "version_issues": {
+        "awaitility:4.2.2": "Version is hardcoded and not managed by the parent POM."
       }
     },
-    "commonPatterns": {
-      "testEnvironmentIssues": {
-        "description": "Issues common across all module test environments",
-        "patterns": [
-          {
-            "type": "Resource Cleanup",
-            "affects": "All modules",
-            "severity": "Medium"
-          },
-          {
-            "type": "Test Container Configuration",
-            "affects": ["escalator", "matcher", "monitor"],
-            "severity": "Medium"
-          },
-          {
-            "type": "Test Data Management",
-            "affects": "All modules",
-            "severity": "Medium"
-          }
-        ]
-      },
-      "versionManagement": {
-        "description": "Version management patterns between src and test",
-        "issues": [
-          {
-            "pattern": "Different version requirements between src and test",
-            "severity": "High"
-          },
-          {
-            "pattern": "Test dependencies conflicting with main dependencies",
-            "severity": "Medium"
-          },
-          {
-            "pattern": "Version overrides in both src and test",
-            "severity": "High"
-          }
-        ]
-      },
-      "loggingConfiguration": {
-        "description": "Logging setup inconsistencies",
-        "patterns": [
-          {
-            "issue": "Different logging setups between src and test",
-            "severity": "High"
-          },
-          {
-            "issue": "Version conflicts affecting both src and test",
-            "severity": "High"
-          },
-          {
-            "issue": "Missing test-specific logging config",
-            "affects": ["common", "naas", "orchestrator"],
-            "severity": "High"
-          }
-        ]
-      },
-      "testCoverage": {
-        "description": "Test coverage inconsistencies",
-        "patterns": [
-          {
-            "issue": "Inconsistent coverage requirements",
-            "severity": "Medium"
-          },
-          {
-            "issue": "Different exclusion patterns",
-            "severity": "Low"
-          },
-          {
-            "issue": "Varying test implementation status",
-            "severity": "Medium"
-          }
-        ]
+    "naas": {
+      "description": "Normalization-as-a-Service. Ingests and normalizes data.",
+      "direct_dependencies": [
+        "org.springframework.boot:spring-boot-starter-web",
+        "org.springframework.kafka:spring-kafka",
+        "com.grace.recon:common",
+        "org.apache.commons:commons-csv"
+      ],
+      "version_issues": "None. All versions are correctly inherited from the parent."
+    },
+    "orchestrator": {
+      "description": "Orchestrates the reconciliation workflow.",
+      "direct_dependencies": [
+        "org.springframework.boot:spring-boot-starter",
+        "org.springframework.kafka:spring-kafka",
+        "com.grace.recon:common",
+        "jakarta.annotation:jakarta.annotation-api"
+      ],
+      "version_issues": "None. All versions are correctly inherited from the parent."
+    },
+    "matcher": {
+      "description": "Core reconciliation matching logic.",
+      "direct_dependencies": [
+        "org.springframework.boot:spring-boot-starter-web",
+        "org.springframework.kafka:spring-kafka",
+        "org.springframework.boot:spring-boot-starter-security",
+        "com.grace.recon:common",
+        "org.apache.commons:commons-text:1.12.0 (unmanaged)"
+      ],
+      "version_issues": {
+        "logback-core:1.5.18": "Redundant explicit version declaration. This version is already managed by the parent.",
+        "commons-text:1.12.0": "Version is hardcoded and not managed by the parent POM."
       }
+    },
+    "reporter": {
+      "description": "Analytical reporting from Kafka persistence via Kafka Streams.",
+      "direct_dependencies": [
+        "org.springframework.boot:spring-boot-starter-web",
+        "org.springframework.kafka:spring-kafka",
+        "org.apache.kafka:kafka-streams",
+        "com.grace.recon:common"
+      ],
+      "version_issues": "None. All versions are correctly inherited from the parent."
+    },
+    "escalator": {
+      "description": "Handles and stores unmatched items.",
+      "direct_dependencies": [
+        "org.springframework.boot:spring-boot-starter",
+        "org.springframework.kafka:spring-kafka",
+        "org.springframework.boot:spring-boot-starter-data-mongodb",
+        "com.grace.recon:common"
+      ],
+      "version_issues": "None. All versions are correctly inherited from the parent."
+    },
+    "monitor": {
+      "description": "Monitoring service.",
+      "direct_dependencies": [
+        "org.springframework.boot:spring-boot-starter",
+        "com.grace.recon:common"
+      ],
+      "version_issues": "None. All versions are correctly inherited from the parent."
     }
   },
-  "remediationPlan": {
-    "safeChanges": {
-      "parentPomFixes": {
-        "dependencyManagement": {
-          "addVersionProperties": [
-            {
-              "property": "commons-csv.version",
-              "value": "1.10.0",
-              "usage": "Move commons-csv version to parent",
-              "impact": "No runtime impact, improves version management",
-              "module": "naas",
-              "status": "Completed"
-            },
-            {
-              "property": "jakarta-annotation-api.version",
-              "value": "2.1.1",
-              "usage": "Move jakarta.annotation-api version to parent",
-              "impact": "No runtime impact, improves version management",
-              "module": "orchestrator",
-              "status": "Completed"
-            },
-            {
-              "property": "mockito-inline.version",
-              "value": "5.2.0",
-              "usage": "Add mockito-inline support for static mocking",
-              "impact": "Enables static method mocking in tests",
-              "module": "common",
-              "status": "Completed"
-            }
-          ],
-          "implementation": {
-            "step1": "Add version properties to parent POM properties section",
-            "step2": "Add dependencies to parent POM dependencyManagement section",
-            "step3": "Remove explicit versions from module POMs",
-            "verification": "Run mvn clean install to verify build succeeds"
-          }
-        }
-      },
-      "documentation": {
-        "improvements": [
-          {
-            "file": "pomernerian.json",
-            "sections": [
-              "Add detailed dependency flow documentation",
-              "Document current version constraints",
-              "Add module-specific test requirements"
-            ]
-          }
-        ]
+  "overall_health_assessment": {
+    "status": "NEEDS_ATTENTION",
+    "summary": "The project's dependency management is mostly centralized and clean due to recent fixes. However, a critical logging conflict and a few unmanaged dependencies remain, posing a risk to build stability and runtime behavior.",
+    "critical_issues": [
+      {
+        "issue_id": "DEP-001",
+        "description": "Transitive `log4j:log4j` dependency from `esapi` in the `common` module.",
+        "risk": "High. Can cause unpredictable logging behavior, class loading issues, and break production monitoring.",
+        "recommendation": "Add an exclusion for `log4j:log4j` within the `esapi` dependency declaration in `common/pom.xml`."
       }
-    },
-    "preserveCurrentSetup": {
-      "logging": {
-        "reason": "Current Logback 1.4.14 deeply integrated across modules",
-        "components": [
-          "Production JSON logging with LogstashEncoder",
-          "Test-specific logging configurations",
-          "Module-specific log routing"
-        ],
-        "status": "Maintained for stability"
-      },
-      "testEnvironments": {
-        "reason": "Custom test configurations tightly coupled to current versions",
-        "components": [
-          "EmbeddedKafkaBroker configurations",
-          "TestContainers setups",
-          "Module-specific test resources"
-        ]
-      },
-      "securityTesting": {
-        "reason": "Version-specific security and compliance testing",
-        "components": [
-          "ESAPI test configurations",
-          "PCI compliance test setup",
-          "Security mocking approaches"
-        ]
+    ],
+    "medium_issues": [
+      {
+        "issue_id": "DEP-002",
+        "description": "Unmanaged dependencies with hardcoded versions exist in the `common` and `matcher` modules (`awaitility`, `commons-text`).",
+        "risk": "Medium. Can lead to version conflicts if another dependency pulls in a different version of the same library.",
+        "recommendation": "Move the version declarations for these artifacts to the parent POM's `<dependencyManagement>` section."
       }
-    }
+    ],
+    "positive_aspects": [
+      "Excellent use of a parent POM and BOMs to manage most dependency versions.",
+      "Clean module hierarchy where services depend on a single `common` library.",
+      "Consistent use of Spring Boot across all modules."
+    ]
   }
-} 
+}
