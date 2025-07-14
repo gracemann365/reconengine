@@ -10,7 +10,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DlqRouter {
 
-  private static final Logger log = LoggerFactory.getLogger(DlqRouter.class);
+  // Made non-final to allow mocking in tests
+  private static Logger log = LoggerFactory.getLogger(DlqRouter.class);
 
   /**
    * Routes a failed message to the Dead Letter Queue. This method simulates sending the message to

@@ -1,0 +1,348 @@
+{
+    "kaiser": {
+      "version": "1.0",
+      "timestamp": "2025-07-13T17:35:03Z",
+      "situationalAnalysis": {
+        "lastUpdated": "2025-07-09T17:26:40Z",
+        "buildType": "dev",
+        "metrics": {
+          "totalTimeSeconds": 18.921,
+          "tool": "Maven",
+          "command": "just build"
+        },
+        "tests": {
+          "executed": false,
+          "jacocoCoverageExecuted": false,
+          "reason": "Tests were skipped; the jacoco.exec report, the proof of our units' combat readiness, is missing."
+        },
+        "warnings": [
+          {
+            "type": "unchecked_operations",
+            "file": "YamlRuleEngine.java",
+            "assessment": "A minor tactical oversight; acceptable for now."
+          },
+          {
+            "type": "deprecated_api",
+            "file": "ResilienceConfigTest.java",
+            "assessment": "A relic of past strategies; must be modernized."
+          }
+        ],
+        "moduleStatus": [
+          {
+            "name": "Reconciliation Engine PoC Parent",
+            "artifactId": "reconengine",
+            "type": "pom",
+            "status": "OPERATIONAL"
+          },
+          {
+            "name": "Reconciliation Engine Common Libraries",
+            "artifactId": "common",
+            "type": "jar",
+            "status": "OPERATIONAL",
+            "sources": {
+              "main": 37,
+              "test": 26
+            }
+          },
+          {
+            "name": "Reconciliation Engine NaaS Microservice",
+            "artifactId": "naas",
+            "type": "jar",
+            "status": "OPERATIONAL",
+            "sources": {
+              "main": 2,
+              "test": 1
+            }
+          },
+          {
+            "name": "Reconciliation Engine Orchestrator Microservice",
+            "artifactId": "orchestrator",
+            "type": "jar",
+            "status": "OPERATIONAL",
+            "sources": {
+              "main": 1,
+              "test": 1
+            }
+          },
+          {
+            "name": "Reconciliation Engine Matcher Microservice",
+            "artifactId": "matcher",
+            "type": "jar",
+            "status": "OPERATIONAL",
+            "sources": {
+              "main": 1,
+              "test": 1
+            }
+          },
+          {
+            "name": "Reconciliation Engine Reporter Microservice",
+            "artifactId": "reporter",
+            "type": "jar",
+            "status": "OPERATIONAL",
+            "sources": {
+              "main": 1,
+              "test": 1
+            }
+          },
+          {
+            "name": "Reconciliation Engine Escalator Microservice",
+            "artifactId": "escalator",
+            "type": "jar",
+            "status": "OPERATIONAL",
+            "sources": {
+              "main": 1,
+              "test": 1
+            }
+          },
+          {
+            "name": "Reconciliation Engine Monitor Microservice",
+            "artifactId": "monitor",
+            "type": "jar",
+            "status": "OPERATIONAL",
+            "sources": {
+              "main": 1,
+              "test": 1
+            }
+          }
+        ]
+      },
+      "imperialDirectives": {
+        "lastUpdated": "2025-07-12T17:30:00Z",
+        "absoluteEdicts": [
+          {
+            "id": "EDICT-001",
+            "decree": "THOU SHALT NOT use primitive string splitting for complex data formats such as SQL, CSV, or any quoted/escaped data.",
+            "reason": "This crude tactic fails spectacularly against edge cases like quoted commas or NULL values, as witnessed in the disastrous ETL-002 campaign within the NaaS module.",
+            "mandate": "Employ format-aware parsers or robust regular expressions fit for a civilized empire."
+          },
+          {
+            "id": "EDICT-002",
+            "decree": "THOU SHALT NOT assume the allegiance of external systems like Kafka or databases without rigorous, isolated trials.",
+            "reason": "Misconfigurations lead to silent treachery and systemic failure, a lesson learned from the INFRA-001 incident.",
+            "mandate": "Verify their loyalty with console tools and isolated tests before allowing them into the integrated army."
+          },
+          {
+            "id": "EDICT-003",
+            "decree": "THOU SHALT NOT alter the sacred data types, such as our core Quant DTOs, without a full audit of the chain of command.",
+            "reason": "Such recklessness causes cascading heresies across serialization boundaries and test battalions, as proven by the ETL-003 debacle.",
+            "mandate": "Map all downstream dependencies across every module before sanctioning any change to our data contracts."
+          },
+          {
+            "id": "EDICT-004",
+            "decree": "THOU SHALT NOT trust default serialization for complex artifacts.",
+            "reason": "Mismatched expectations between producer and consumer are a form of insurrection, leading to runtime exceptions (ref: KAFKA-001).",
+            "mandate": "Explicitly configure and enforce serializers and deserializers for all communications."
+          },
+          {
+            "id": "EDICT-005",
+            "decree": "THOU SHALT NOT blame the strategic configuration when the battlefield itself is flawed.",
+            "reason": "Missing directories or improper permissions often masquerade as configuration errors, a tactical misdirection seen in BUILD-001.",
+            "mandate": "Verify the terrain—files, permissions, and active processes—before questioning the grand strategy."
+          },
+          {
+            "id": "EDICT-006",
+            "decree": "THOU SHALT NOT attempt more than two simplistic fixes before engaging in deeper strategic analysis.",
+            "reason": "Such tinkering masks the true root cause and is a foolish waste of imperial time and resources, as the BUILD-003 folly demonstrated.",
+            "mandate": "After two failed attempts, escalate immediately to dependency graph analysis or minimal reproducible examples."
+          },
+          {
+            "id": "EDICT-007",
+            "decree": "THOU SHALT NOT deploy unsecured endpoints that can alter core logic.",
+            "reason": "This exposes the heart of our operation to saboteurs and unauthorized command. A lesson from the CP9.T3 simulation.",
+            "mandate": "All strategic endpoints must be fortified with role-based authentication."
+          },
+          {
+            "id": "EDICT-008",
+            "decree": "THOU SHALT NOT attempt to fix test-specific dependency conflicts by corrupting main application code or introducing chaotic test configurations.",
+            "reason": "This path leads to a destructive loop of trial-and-error, shattering core application functionality and invoking the dreaded BeanDefinitionOverrideException.",
+            "mandate": "Master the Spring Test Context, employ programmatic test-only consumers, and enforce a unified configuration across all realms."
+          },
+          {
+            "id": "EDICT-009",
+            "decree": "THOU SHALT NOT engage in surgical strikes against deeply intertwined compilation errors after initial attempts fail.",
+            "reason": "This results in a 'whack-a-mole' war of attrition, creating new vulnerabilities and prolonging the conflict, a grim reminder of the AGENT-003 campaign.",
+            "mandate": "When multiple, related errors persist, command a holistic file replacement or re-scaffolding of the entire sector to ensure absolute consistency."
+          },
+          {
+            "id": "EDICT-010",
+            "decree": "THOU SHALT NOT assume a successful build equates to a successful campaign.",
+            "reason": "Compilation merely confirms the worthiness of our troops' syntax; it does not guarantee victory at runtime. Misconfigurations, missing resources, or environmental hostilities can still lead to a rout at startup (ref: AGENT-004).",
+            "mandate": "Every successful build must be followed by runtime verification. Launch the application, execute integration test sorties, and scrutinize the logs for any sign of dissent."
+          }
+        ],
+        "strategicErrorAnalyses": [
+          {
+            "id": "PATTERN-001",
+            "threat": "The Ambush of Cascading Failures",
+            "severity": "CRITICAL",
+            "description": "Altering a data type without tracing its flow downstream causes a chain reaction of failures across the system.",
+            "tactic": "Hidden dependencies in serialization, databases, and other services break silently, only revealing themselves during integration.",
+            "countermeasure": [
+              "Conduct a full data-flow audit before any type modification.",
+              "Test compatibility both forwards and backwards."
+            ],
+            "precedents": ["ETL-003", "AGENT-001"]
+          },
+          {
+            "id": "PATTERN-002",
+            "threat": "The Illusion of Simplicity",
+            "severity": "CRITICAL",
+            "description": "Using naive parsing methods (e.g., `split(',')`) on complex, structured data.",
+            "tactic": "The method appears to work for ideal cases but collapses when faced with real-world edge cases like quoted delimiters or escaped characters.",
+            "countermeasure": ["Deploy dedicated, battle-hardened parsers or sophisticated regex formations."],
+            "precedents": ["ETL-002"]
+          },
+          {
+            "id": "PATTERN-003",
+            "threat": "Assuming Vassal Loyalty",
+            "severity": "CRITICAL",
+            "description": "Trusting external systems (Kafka, databases) to be correctly configured and operational without independent verification.",
+            "tactic": "Partial configurations or network issues can deceive one into believing the system is ready, leading to integration failures.",
+            "countermeasure": ["Interrogate all external systems in isolation with basic tools before allowing them to join the main force."],
+            "precedents": ["INFRA-001"]
+          },
+          {
+            "id": "PATTERN-004",
+            "threat": "Configuration Scope Confusion",
+            "severity": "HIGH",
+            "description": "Misunderstanding how configurations are inherited and applied, particularly in a multi-module Maven project.",
+            "tactic": "Official documentation often assumes a high level of prior knowledge, leading to misapplication of rules.",
+            "countermeasure": ["Consult the scrolls for the precise version of the tool in use, focusing on its laws of inheritance and scope."],
+            "precedents": ["BUILD-002"]
+          },
+          {
+            "id": "PATTERN-005",
+            "threat": "The Misplaced Blame",
+            "severity": "HIGH",
+            "description": "Wasting strategic time debugging configuration files when the environment itself is the source of the problem.",
+            "tactic": "Error messages from the front lines are often misleading, pointing to strategy when the issue is the terrain.",
+            "countermeasure": ["Perform reconnaissance of the filesystem, permissions, and running processes before questioning the strategic plan."],
+            "precedents": ["BUILD-001"]
+          },
+          {
+            "id": "PATTERN-006",
+            "threat": "Death by a Thousand Cuts",
+            "severity": "CRITICAL",
+            "description": "Attempting minor, iterative surgical fixes on a systemic, architectural flaw.",
+            "tactic": "Fixing one symptom only reveals or creates another, leading to a prolonged and demoralizing debugging war.",
+            "countermeasure": [
+              "When faced with multiple, interconnected compilation errors, cease minor skirmishes and immediately escalate to a full strategic review.",
+              "Authorize complete file replacements or module re-scaffolding to enforce architectural integrity."
+            ],
+            "precedents": ["AGENT-003"]
+          },
+          {
+            "id": "PATTERN-007",
+            "threat": "The Pyrrhic Build",
+            "severity": "CRITICAL",
+            "description": "Achieving a successful build (compilation) that results in a failed deployment or runtime.",
+            "tactic": "The build provides a false sense of victory, masking fatal flaws in configuration or runtime context that prevent the application from even starting.",
+            "countermeasure": [
+              "Victory is only declared after runtime verification. A successful build must be followed by a successful launch.",
+              "Prioritize the analysis of battlefield reports (application logs) for signs of startup failure."
+            ],
+            "precedents": ["AGENT-004"]
+          }
+        ],
+        "historicalPrecedents": [
+          {
+            "id": "BUILD-001",
+            "summary": "The campaign where we blamed the imperial decree (POM) for a missing supply depot (directory).",
+            "lesson": "First, survey the terrain."
+          },
+          {
+            "id": "ETL-002",
+            "summary": "The embarrassing defeat where our elite `split(',')` commandos were ambushed by a quoted comma in an SQL INSERT statement.",
+            "lesson": "Use weapons appropriate for the enemy's armor."
+          },
+          {
+            "id": "KAFKA-001/002",
+            "summary": "The time our default Kafka transports mangled the sacred Quant DTOs, causing chaos.",
+            "lesson": "Dictate the precise terms of all data exchange."
+          },
+          {
+            "id": "INFRA-001",
+            "summary": "The Kafka rebellion, where the broker appeared loyal but was not fully configured for war.",
+            "lesson": "Confirm allegiance independently."
+          },
+          {
+            "id": "ETL-003",
+            "summary": "The great system-wide plague, caused by changing a single Quant DTO without auditing its empire-wide consequences.",
+            "lesson": "No single component is an island; audit all dependencies before enacting change."
+          },
+          {
+            "id": "AGENT-002",
+            "summary": "The misguided attempt to pacify the test realm by altering core application serializers, leading to widespread corruption and a broken state.",
+            "lesson": "The laws of the test realm must not corrupt the laws of the empire. Uphold Edicts 003, 004, and 006."
+          },
+          {
+            "id": "AGENT-003",
+            "summary": "The 'Whack-a-Mole' war in the Orchestrator module, where iterative fixes on compilation errors only spawned new ones, violating Edict 006.",
+            "lesson": "When faced with systemic rebellion, a surgical strike is folly. A decisive, overwhelming show of force (holistic file replacement) is required."
+          },
+          {
+            "id": "AGENT-004",
+            "summary": "The failure to detect the critical `BeanDefinitionOverrideException` because the system-wide sweep declared victory after compilation, ignoring the subsequent runtime collapse.",
+            "lesson": "A successful build is merely the start of the battle, not its conclusion. Runtime verification is non-negotiable."
+          }
+        ],
+        "doctrineOfVictory": [
+          {
+            "id": "DOCTRINE-001",
+            "principle": "Conquer the Environment First",
+            "details": "Verify files, permissions, network routes, and running processes before questioning strategy or code."
+          },
+          {
+            "id": "DOCTRINE-002",
+            "principle": "Heed the Ancient Scrolls",
+            "details": "Consult the documentation specific to the version of any tool you wield. Assume nothing."
+          },
+          {
+            "id": "DOCTRINE-003",
+            "principle": "Audit Before Action",
+            "details": "Before changing any shared law or artifact (like a DTO), map its influence across the entire empire and test its impact."
+          },
+          {
+            "id": "DOCTRINE-004",
+            "principle": "Wield Superior Weaponry",
+            "details": "No shortcuts on complex data. Use powerful, dedicated libraries and parsers. Leave primitive tools behind."
+          },
+          {
+            "id": "DOCTRINE-005",
+            "principle": "Isolate and Subjugate",
+            "details": "Verify the functionality of all external systems (Kafka, DBs) in isolation before integrating them."
+          },
+          {
+            "id": "DOCTRINE-006",
+            "principle": "Escalate with Intelligence, Not Force",
+            "details": "After two failed fixes, cease brute force. Retreat, analyze, and redeploy with a new strategy based on a minimal reproducible example and full dependency analysis."
+          },
+          {
+            "id": "DOCTRINE-007",
+            "principle": "Proactive Fortification",
+            "details": "Validate all configurations against runtime objects at startup. A fortress that cannot stand on its own is no fortress at all."
+          },
+          {
+            "id": "DOCTRINE-008",
+            "principle": "Cache for Speed",
+            "details": "Cache expensive and repeated operations, such as reflection lookups. Swiftness is a weapon."
+          },
+          {
+            "id": "DOCTRINE-009",
+            "principle": "Assume Nothing, Verify Everything",
+            "details": "Adopt a defensive, paranoid mindset. Assume data is corrupt, the environment is hostile, and systems are unreliable until proven otherwise through rigorous validation."
+          },
+          {
+            "id": "DOCTRINE-010",
+            "principle": "Systemic Flaws Demand Systemic Solutions",
+            "details": "When faced with interconnected failures, dispense with tactical fixes. A holistic replacement or re-architecting of the flawed component is the only path to a stable and lasting victory."
+          },
+          {
+            "id": "DOCTRINE-011",
+            "principle": "Total Verification is Total Victory",
+            "details": "A campaign is only successful when both the build succeeds AND the runtime is stable. Comprehensive verification must include compilation, packaging, application startup, and integration testing. Anything less is a prelude to failure."
+          }
+        ]
+      }
+    }
+  }

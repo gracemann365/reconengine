@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Service;
+import org.awaitility.Awaitility;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest(
     classes = {
@@ -83,20 +86,17 @@ class ResilienceAspectsIntegrationTest {
   @Test
   void testRetrySuccess() throws IOException {
     testService.retryCallCount = 0; // Reset call count for this test
-    // This test is now invalid as the retry will always fail, so we test the failure case instead.
-    // A success test would pass shouldFail=false
     String result = testService.retryMethod(false);
+    Awaitility.await().atMost(Duration.ofSeconds(1)).until(() -> testService.retryCallCount == 1);
     assertEquals("Success after 1 attempts", result);
-    assertEquals(1, testService.retryCallCount);
   }
 
   @Test
   void testRetryFailure() throws IOException {
     testService.retryCallCount = 0; // Reset call count for this test
-    // Should fail after max attempts (3) and then trigger fallback
     String result = testService.retryMethod(true);
+    Awaitility.await().atMost(Duration.ofSeconds(1)).until(() -> testService.retryCallCount == 3);
     assertTrue(result.startsWith("Fallback for Retry"));
-    assertEquals(3, testService.retryCallCount);
   }
 
   @Test
@@ -107,8 +107,8 @@ class ResilienceAspectsIntegrationTest {
 
   @Test
   void testTimeLimiterTimeout() {
-    CompletableFuture<String> future =
-        testService.timeLimiterMethod(6000); // Longer than 5 seconds timeout
+    CompletableFuture<String> future = testService.timeLimiterMethod(6000); // Longer than 5 seconds timeout
+    Awaitility.await().atMost(Duration.ofSeconds(10)).until(future::isDone);
     String result = future.join();
     assertEquals("Fallback for TimeLimiter: TimeoutException", result);
   }

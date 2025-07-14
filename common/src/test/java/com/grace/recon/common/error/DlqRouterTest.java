@@ -5,75 +5,70 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@ExtendWith(MockitoExtension.class)
+import java.lang.reflect.Field;
+
 class DlqRouterTest {
 
-  @Mock
-  private Logger log;
+  private Logger originalLogger;
 
-  @InjectMocks
-  private DlqRouter dlqRouter;
+  private void setLogger(Logger logger) throws NoSuchFieldException, IllegalAccessException {
+    Field logField = DlqRouter.class.getDeclaredField("log");
+    logField.setAccessible(true);
+    originalLogger = (Logger) logField.get(null);
+    logField.set(null, logger);
+  }
 
+  private void restoreLogger() throws NoSuchFieldException, IllegalAccessException {
+    Field logField = DlqRouter.class.getDeclaredField("log");
+    logField.setAccessible(true);
+    logField.set(null, originalLogger);
+  }
 
   @Test
-  void testRouteToDlq_fullArguments() {
+  void testRouteToDlq_fullArguments() throws NoSuchFieldException, IllegalAccessException {
     String topic = "test-topic";
     String key = "test-key";
     String value = "test-value";
     String errorMessage = "Simulated error";
 
-    try (MockedStatic<LoggerFactory> mockedLoggerFactory =
-        Mockito.mockStatic(LoggerFactory.class)) {
-      Logger mockLogger = Mockito.mock(Logger.class);
-      mockedLoggerFactory
-          .when(() -> LoggerFactory.getLogger(DlqRouter.class))
-          .thenReturn(mockLogger);
+    Logger mockLogger = Mockito.mock(Logger.class);
+    setLogger(mockLogger);
 
-      DlqRouter.routeToDlq(topic, key, value, errorMessage);
+    DlqRouter.routeToDlq(topic, key, value, errorMessage);
 
-      verify(mockLogger, times(1))
+    verify(mockLogger, times(1))
           .error(
-              eq(
-                  "Routing message to DLQ. Original Topic: {}, Key: {}, Error: {}. Message Content: {}"),
+              eq("Routing message to DLQ. Original Topic: {}, Key: {}, Error: {}. Message Content: {}"),
               eq(topic),
               eq(key),
               eq(errorMessage),
               eq(value));
-    }
+
+    restoreLogger();
   }
 
   @Test
-  void testRouteToDlq_defaultErrorMessage() {
+  void testRouteToDlq_defaultErrorMessage() throws NoSuchFieldException, IllegalAccessException {
     String topic = "another-topic";
     String key = "another-key";
     String value = "another-value";
 
-    try (MockedStatic<LoggerFactory> mockedLoggerFactory =
-        Mockito.mockStatic(LoggerFactory.class)) {
-      Logger mockLogger = Mockito.mock(Logger.class);
-      mockedLoggerFactory
-          .when(() -> LoggerFactory.getLogger(DlqRouter.class))
-          .thenReturn(mockLogger);
+    Logger mockLogger = Mockito.mock(Logger.class);
+    setLogger(mockLogger);
 
-      DlqRouter.routeToDlq(topic, key, value);
+    DlqRouter.routeToDlq(topic, key, value);
 
-      verify(mockLogger, times(1))
+    verify(mockLogger, times(1))
           .error(
-              eq(
-                  "Routing message to DLQ. Original Topic: {}, Key: {}, Error: {}. Message Content: {}"),
+              eq("Routing message to DLQ. Original Topic: {}, Key: {}, Error: {}. Message Content: {}"),
               eq(topic),
               eq(key),
               eq("Processing failed."),
               eq(value));
-    }
+
+    restoreLogger();
   }
 }

@@ -1,65 +1,82 @@
 package com.grace.recon.common.monitoring;
 
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 class AuditLoggerTest {
 
-  private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-  private final PrintStream originalOut = System.out;
-
-  private MockedStatic<LoggerFactory> mockedLoggerFactory;
   private Logger mockLogger;
+  private Logger originalLogger;
+
+  private void setLogger(Logger logger) throws NoSuchFieldException, IllegalAccessException {
+    Field logField = AuditLogger.class.getDeclaredField("AUDIT_LOGGER");
+    logField.setAccessible(true);
+    originalLogger = (Logger) logField.get(null);
+    logField.set(null, logger);
+  }
+
+  private void restoreLogger() throws NoSuchFieldException, IllegalAccessException {
+    if (originalLogger != null) {
+      Field logField = AuditLogger.class.getDeclaredField("AUDIT_LOGGER");
+      logField.setAccessible(true);
+      logField.set(null, originalLogger);
+    }
+  }
 
   @BeforeEach
-  void setUp() {
-    System.setOut(new PrintStream(outContent));
-
-    // Mock LoggerFactory and Logger
-    mockedLoggerFactory = Mockito.mockStatic(LoggerFactory.class);
+  void setUp() throws NoSuchFieldException, IllegalAccessException {
+    // Clear any existing MDC context
+    MDC.clear();
+    
+    // Create mock logger and set it
     mockLogger = Mockito.mock(Logger.class);
-    mockedLoggerFactory.when(() -> LoggerFactory.getLogger("AUDIT")).thenReturn(mockLogger);
+    setLogger(mockLogger);
   }
 
   @AfterEach
-  void tearDown() {
-    System.setOut(originalOut);
-    mockedLoggerFactory.close(); // Close the mocked static
+  void tearDown() throws NoSuchFieldException, IllegalAccessException {
+    restoreLogger();
+    MDC.clear();
   }
 
   @Test
   void testLogEvent_withDetails() {
+    // Prepare test data
     Map<String, String> details = new HashMap<>();
     details.put("user", "testUser");
     details.put("action", "login");
 
+    // Execute the test
     AuditLogger.logEvent("User Login", details);
 
-    // Verify that the logger's info method was called
-    verify(mockLogger, times(1)).info(eq("User Login"));
+    // Verify logger interactions
+    verify(mockLogger, times(1)).info("User Login");
 
-    // Verify MDC interactions (though direct MDC verification is harder with static mocks)
-    // We rely on the implementation detail that MDC.put/remove are called.
+    // Verify MDC is cleared after logging
+    assertNull(MDC.get("user"));
+    assertNull(MDC.get("action"));
   }
 
   @Test
   void testLogEvent_noDetails() {
+    // Execute the test
     AuditLogger.logEvent("System Startup");
 
-    // Verify that the logger's info method was called
-    verify(mockLogger, times(1)).info(eq("System Startup"));
+    // Verify logger interactions
+    verify(mockLogger, times(1)).info("System Startup");
+
+    // Verify MDC is empty
+    assertNull(MDC.getCopyOfContextMap());
   }
 }

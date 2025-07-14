@@ -12,7 +12,8 @@ import org.slf4j.MDC;
  */
 public class AuditLogger {
 
-  private static final Logger AUDIT_LOGGER = LoggerFactory.getLogger("AUDIT");
+  // Made non-final to allow mocking in tests
+  private static Logger AUDIT_LOGGER = LoggerFactory.getLogger("AUDIT");
 
   /**
    * Logs an audit event with a message and optional key-value pairs. The key-value pairs are added

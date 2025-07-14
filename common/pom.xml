@@ -36,16 +36,22 @@
             </exclusions>
         </dependency>
 
-        <!-- Explicit Logback dependencies to avoid conflicts -->
+        <!-- Logging Dependencies -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.14</version> <!-- Using a recent stable version -->
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.4.14</version> <!-- Must match logback-classic version -->
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <!-- Lombok (Version inherited from parent's Spring Boot BOM) -->
@@ -59,10 +65,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
         </dependency>
-
-        
 
         <!-- Resilience4j Core Modules (Versions inherited from parent's Resilience4j BOM) -->
         <dependency>
@@ -98,18 +101,15 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
-            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
-            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
-            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
             <scope>runtime</scope>
         </dependency>
 
@@ -139,32 +139,16 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>
-            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
-        </dependency>
-
-        <!-- Logging API (Version inherited from parent's dependencyManagement) -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <!-- Logstash Logback Encoder for structured logging -->
-        <dependency>
-            <groupId>net.logstash.logback</groupId>
-            <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.4</version> <!-- Using a recent stable version compatible with Logback 1.4.x -->
         </dependency>
 
         <!-- Input Validation / Sanitization (Version inherited from parent's dependencyManagement) -->
         <dependency>
             <groupId>org.owasp.esapi</groupId>
             <artifactId>esapi</artifactId>
-            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
         </dependency>
 
         <!-- Test Dependencies (Versions inherited from parent's JUnit BOM and Spring Boot BOM) -->
@@ -186,6 +170,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.2.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

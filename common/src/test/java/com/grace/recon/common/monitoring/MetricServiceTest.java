@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import org.awaitility.Awaitility;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,14 +56,8 @@ class MetricServiceTest {
         };
     String result = metricService.recordTimer(timerName, task, "task", "callable");
     assertEquals("done", result);
-    assertTrue(meterRegistry.get(timerName).tag("task", "callable").timer().count() > 0);
-    assertTrue(
-        meterRegistry
-                .get(timerName)
-                .tag("task", "callable")
-                .timer()
-                .totalTime(java.util.concurrent.TimeUnit.MILLISECONDS)
-            >= 100);
+    Awaitility.await().atMost(Duration.ofSeconds(1)).until(() -> meterRegistry.get(timerName).tag("task", "callable").timer().count() > 0);
+    Awaitility.await().atMost(Duration.ofSeconds(1)).until(() -> meterRegistry.get(timerName).tag("task", "callable").timer().totalTime(TimeUnit.MILLISECONDS) >= 100);
   }
 
   @Test
@@ -75,13 +72,7 @@ class MetricServiceTest {
           }
         };
     metricService.recordTimer(timerName, task, "task", "runnable");
-    assertTrue(meterRegistry.get(timerName).tag("task", "runnable").timer().count() > 0);
-    assertTrue(
-        meterRegistry
-                .get(timerName)
-                .tag("task", "runnable")
-                .timer()
-                .totalTime(java.util.concurrent.TimeUnit.MILLISECONDS)
-            >= 50);
+    Awaitility.await().atMost(Duration.ofSeconds(1)).until(() -> meterRegistry.get(timerName).tag("task", "runnable").timer().count() > 0);
+    Awaitility.await().atMost(Duration.ofSeconds(1)).until(() -> meterRegistry.get(timerName).tag("task", "runnable").timer().totalTime(TimeUnit.MILLISECONDS) >= 50);
   }
 }

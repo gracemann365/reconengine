@@ -1,0 +1,88 @@
+---
+# MongoDB Atlas Setup Report
+# Project: Reconciliation Engine PoC
+# Task Reference: INFRA.T1
+# Status: COMPLETED
+
+cluster:
+  name: "limitless"
+  tier: "Free Tier (M0)"
+  type: "Shared Cluster"
+  provider: "AWS"
+  region: "Mumbai (ap-south-1)"
+
+security:
+  database_user:
+    username: "guymathematics07"
+    password: "UprWacw5vbLff8cZ"  # Note: Storing passwords in config files is not recommended for production
+    permissions: "Read and write to any database"
+  
+  network_access:
+    allowed_ips:
+      - address: "182.48.237.53"
+        description: "Local development environment"
+    access_mode: "IP Whitelist"
+
+connection:
+  protocol: "mongodb+srv"
+  host: "limitess.7hmczvs.mongodb.net"
+  options:
+    retryWrites: true
+    w: "majority"
+    appName: "limitless"
+  
+  uri: "mongodb+srv://guymathematics07:UprWacw5vbLff8cZ@limitess.7hmczvs.mongodb.net/?retryWrites=true&w=majority&appName=limitless"
+  
+  # Connection code examples
+  examples:
+    java:
+      driver_version: "Stable API 5.1 or later"
+      code: |
+        import com.mongodb.ConnectionString;
+        import com.mongodb.MongoClientSettings;
+        import com.mongodb.MongoException;
+        import com.mongodb.ServerApi;
+        import com.mongodb.ServerApiVersion;
+        import com.mongodb.client.MongoClient;
+        import com.mongodb.client.MongoClients;
+        import com.mongodb.client.MongoDatabase;
+        import org.bson.Document;
+
+        public class MongoClientConnectionExample {
+            public static void main(String[] args) {
+                String connectionString = "mongodb+srv://guymathematics07:<db_password>@limitless.7hmczvs.mongodb.net/?retryWrites=true&w=majority&appName=limitless";
+                ServerApi serverApi = ServerApi.builder()
+                        .version(ServerApiVersion.V1)
+                        .build();
+                MongoClientSettings settings = MongoClientSettings.builder()
+                        .applyConnectionString(new ConnectionString(connectionString))
+                        .serverApi(serverApi)
+                        .build();
+                // Create a new client and connect to the server
+                try (MongoClient mongoClient = MongoClients.create(settings)) {
+                    try {
+                        // Send a ping to confirm a successful connection
+                        MongoDatabase database = mongoClient.getDatabase("admin");
+                        database.runCommand(new Document("ping", 1));
+                        System.out.println("Pinged your deployment. You successfully connected to MongoDB!");
+                    } catch (MongoException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+resources:
+  documentation:
+    - title: "Get started with the Java Driver"
+      type: "Guide"
+    - title: "Java Starter Sample App"
+      type: "Example"
+    - title: "Access your Database Users"
+      type: "Reference"
+    - title: "Troubleshoot Connections"
+      type: "Support"
+
+notes:
+  - "Ensure any option parameters are URL encoded if manually modifying the connection string"
+  - "This configuration is optimized for PoC development, not production use"

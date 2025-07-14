@@ -1,0 +1,99 @@
+{
+    "fileName": "imRunningAway.json",
+    "analysisVersion": "4.0",
+    "analysisTimestamp": "2025-07-14T10:00:00.000Z",
+    "focus": "ACTIONABLE_IMPROVEMENT_PLAN. This document provides prioritized, step-by-step instructions to address identified opportunities in the Reconciliation Engine PoC, drawing directly from facts in semanticMemory files like pomernerian.json (e.g., Logback version conflicts in common, naas, orchestrator), common.json (e.g., 25 test failures across monitoring, security, resilience), naas.json (e.g., floating versions like '3.x' for Spring Boot), and unbearableTruth.json (e.g., 50-55% overall completion with atomic architecture). Emphasizes quick wins for POC stability without prod-level polish.",
+    "executiveSummary": {
+      "summary": "The Reconciliation Engine PoC demonstrates strong modular architecture (per unbearableTruth.json's atomic precision) with solid ETL in naas.json, pairing logic in orchestrator.json, and shared utilities in common.json. To reach 75-80% core completion, focus on these prioritized fixes for testing, dependencies, and security—leveraging kafkaSetup.yml's robust topics and pomernerian.json's clean hierarchies.",
+      "keyOpportunities": [
+        "**Enhance Test Reliability:** Address 25 failures in common.json (e.g., static mocking in DlqRouterTest) to achieve 90% coverage goal.",
+        "**Standardize Dependencies:** Resolve Logback conflicts (1.5.18 parent vs 1.4.14 modules in pomernerian.json) and pin floating versions in naas.json.",
+        "**Strengthen Security:** Secure MongoDB creds in atlasSetupReport.yaml and enforce InputSanitizer in naas.json's EtlService.",
+        "**Complete Data Flows:** Implement recon metadata generation in matcher.json and escalation workflows in escalator.json.",
+        "**Boost Observability:** Add metrics to reporter.json and monitor.json, building on common.json's Micrometer setup."
+      ]
+    },
+    "prioritizedImprovements": [
+      {
+        "id": "TEST-001",
+        "title": "Resolve Test Failures in Common Module",
+        "category": "Testing",
+        "priorityScore": 100,
+        "factsFromFiles": "common.json reports 25 failures (e.g., MockedStatic symbol issues in DlqRouterTest, AuditLoggerTest; ESAPI config errors in InputSanitizerTest; flaky retries in ResilienceAspectsIntegrationTest). pomernerian.json notes unmanaged deps like logstash-logback-encoder:7.4.",
+        "fixInstructions": [
+          "Add mockito-inline dependency to common/pom.xml (version 5.18.0) to fix static mocking (per common.json's criticalFailures).",
+          "Create logback-test.xml in common/src/test/resources with ConsoleAppender to resolve LogstashEncoder ClassNotFound (per common.json's LoggingConfiguration issue).",
+          "Update ESAPI.properties in common/src/test/resources to fix security test configs (per common.json's testIssues).",
+          "Refactor flaky tests: Use Awaitility for timeouts in ResilienceAspectsIntegrationTest and MetricServiceTest (per common.json's FlawedAssertions and RaceCondition).",
+          "Run mvn test in common module and verify all 96 tests pass, achieving 90% coverage (per common.json's testExecution)."
+        ]
+      },
+      {
+        "id": "DEP-001",
+        "title": "Standardize Dependency Versions",
+        "category": "Dependency Management",
+        "priorityScore": 90,
+        "factsFromFiles": "pomernerian.json shows Logback conflict (parent 1.5.18 vs modules 1.4.14 in common, naas, orchestrator); naas.json uses floating '3.x'/'latest' for Spring Boot/Kafka. unbearableTruth.json claims atomic precision but pomernerian.json notes unmanaged deps like logstash-logback-encoder:7.4 in common.",
+        "fixInstructions": [
+          "In parent pom.xml (per pomernerian.json), add logstash-logback-encoder to dependencyManagement with version 8.0 (compatible with Logback 1.5.18).",
+          "Remove explicit Logback 1.4.14 overrides in common, naas, orchestrator pom.xml files (per pomernerian.json's childModules).",
+          "In naas/pom.xml, replace floating '3.x'/'latest' with pinned versions from parent (e.g., spring-boot-starter 3.2.6, spring-kafka 3.2.3 per pomernerian.json).",
+          "Add unmanaged deps like commons-csv:1.10.0 (from naas.json) and jakarta.annotation-api:2.1.1 (from orchestrator) to parent dependencyManagement.",
+          "Run mvn dependency:tree across all modules to verify convergence (per pomernerian.json's dependencyAnalysis)."
+        ]
+      },
+      {
+        "id": "SEC-001",
+        "title": "Secure Configuration and Credentials",
+        "category": "Security",
+        "priorityScore": 85,
+        "factsFromFiles": "atlasSetupReport.yaml has hardcoded MongoDB creds (username: guymathematics07, password: UprWacw5vbLff8cZ). naas.json's EtlService.parseSwitchFile lacks full InputSanitizer use (per common.json's security features). kafkaSetup.yml uses PLAINTEXT listeners.",
+        "fixInstructions": [
+          "In atlasSetupReport.yaml, remove hardcoded creds and use environment variables (e.g., ${MONGODB_USERNAME}, ${MONGODB_PASSWORD}) injected via secrets manager (reference common.json's SecretManager).",
+          "In naas/src/main/java/com/grace/recon/naas/service/EtlService.java (lines 40-120), wrap rawRecord parsing with common's InputSanitizer.sanitizeSql (per common.json's InputSanitizer methods).",
+          "Update kafkaSetup.yml's server.properties to enable TLS: Add SSL listeners and cert configs (per kafka docs, align with common.json's TlsConfig).",
+          "In escalator.json (planned MongoDB), enforce TlsConfig from common for connections (per atlasSetupReport.yaml's TLS notes).",
+          "Verify by running security scans (e.g., OWASP in pomernerian.json's quality plugins) and manual tests."
+        ]
+      },
+      {
+        "id": "CORE-001",
+        "title": "Complete Core Data Flows",
+        "category": "Implementation",
+        "priorityScore": 80,
+        "factsFromFiles": "unbearableTruth.json notes matcher at 65% (missing recon metadata); reporter.json at 15% (basic setup only); escalator.json at 20% (MongoDB config but empty logic). orchestrator.json has solid batching but incomplete timeouts.",
+        "fixInstructions": [
+          "In matcher/src/main/java/com/grace/recon/matcher/service/CoreMatchingEngine.java, add ReconMeta generation (e.g., batchId, match counts per matcher.json's pending items) and publish to Recon_Metadata_Topic (per kafkaSetup.yml).",
+          "Implement reporter's KafkaStreamsProcessor in reporter.json to consume Recon_Metadata_Topic and generate summaries (per unbearableTruth.json's reporter pending tasks).",
+          "In escalator/src/main/java/com/grace/recon/escalator/processor/EscalationProcessor.java (planned), add handling for UreQuant from orchestrator.json and unmatched from matcher (per unbearableTruth.json's dataFlow).",
+          "In orchestrator/src/main/java/com/grace/recon/orchestrator/service/BatchPreparationService.java (lines 21-95), finalize timeout logic with 30s checks (per orchestrator.json's BATCH_SIZE_THRESHOLD).",
+          "Test E2E: Use etl.json's test data, run through naas to orchestrator to matcher, verify outputs in reporter/escalator (aim for unbearableTruth.json's 75-80% core completion)."
+        ]
+      },
+      {
+        "id": "TEST-002",
+        "title": "Improve Test Coverage and Stability",
+        "category": "Testing",
+        "priorityScore": 75,
+        "factsFromFiles": "matcher.json has 45% line coverage (missing core paths); common.json has 25 failures; pomernerian.json notes unmanaged test deps. unbearableTruth.json claims 90% in common but files show skips needed.",
+        "fixInstructions": [
+          "In matcher/src/test/java/com/grace/recon/matcher/service/CoreMatchingEngineTest.java, add tests for exact/fuzzy paths (per matcher.json's currentCoverage missing items) to reach 80%.",
+          "Resolve common's failures: Add mockito-inline and logback-test.xml (per pomernerian.json and common.json's testIssues).",
+          "Standardize test deps in parent pom.xml (e.g., manage spring-kafka-test per pomernerian.json's testing.universal).",
+          "Add Awaitility to fix flakiness in resilience tests (per common.json's RaceCondition).",
+          "Run mvn jacoco:report and enforce 90% in common/pom.xml (per common.json's coverage thresholds)."
+        ]
+      }
+    ],
+    "remediationRoadmap": {
+      "immediateActions": [
+        "Run all fixes in a single branch, test locally with kafkaSetup.yml's topics.",
+        "Verify via mvn clean install across modules (per pomernerian.json's buildBehavior)."
+      ],
+      "verificationSteps": [
+        "Check build success without test skips (per common.json's skipTestCompilation).",
+        "Run E2E data flow with etl.json's test sets, confirm stats match expected (e.g., 4500 MATCH)."
+      ],
+      "estimatedImpact": "Will boost POC to 75% completion (per unbearableTruth.json), with stable tests and secure setup."
+    }
+  }

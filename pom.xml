@@ -45,7 +45,11 @@
         <!-- Added version properties for better management -->
         <commons-csv.version>1.10.0</commons-csv.version>
         <jakarta-annotation-api.version>2.1.1</jakarta-annotation-api.version>
+        <mockito.version>5.2.0</mockito.version>
         <mockito-inline.version>5.2.0</mockito-inline.version>
+        <resilience4j.version>2.1.0</resilience4j.version>
+        <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
+        <logback.version>1.5.18</logback.version>
 
         <!-- Centralized Dependencies -->
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
@@ -53,8 +57,6 @@
         <jjwt.version>0.11.5</jjwt.version>
         <micrometer.version>1.13.1</micrometer.version>
         <esapi.version>2.2.0.0</esapi.version>
-        <mockito.version>5.18.0</mockito.version>
-        <resilience4j.version>2.1.0</resilience4j.version>
     </properties>
 
     <modules>
@@ -149,12 +151,22 @@
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>1.5.18</version>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-api</artifactId>
                 <version>1.38.0</version>
+            </dependency>
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
             </dependency>
 
             <!-- Security / Validation -->

@@ -35,12 +35,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.14</version>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.4.14</version>
+            <!-- Version is now managed by the parent POM's <dependencyManagement> -->
         </dependency>
         <dependency>
             <groupId>com.grace.recon</groupId>
